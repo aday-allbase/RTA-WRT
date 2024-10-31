@@ -9,20 +9,15 @@ msg() {
 }
 
 
-# Step 1: Configure devices (br-lan, br-voucher)
-msg "Step 1: Configure devices (br-lan, br-voucher)"
+# Step 1: Configure devices (br-lan)
+msg "Step 1: Configure devices (br-lan)"
 uci set network.@device[0]=device
 uci set network.@device[0].name='br-lan'
 uci set network.@device[0].type='bridge'
 uci add_list network.@device[0].ports='eth0'
 
-uci set network.@device[1]=device
-uci set network.@device[1].name='br-voucher'
-uci set network.@device[1].type='bridge'
-
-
-# Step 2: Configure interfaces (lan, modemmanager, wan, tethering, chilli, hotspot_voucher)
-msg "Step 2: Configure interfaces (lan, modemmanager, wan, tethering, chilli, hotspot_voucher)"
+# Step 2: Configure interfaces (lan, tethering)
+msg "Step 2: Configure interfaces (lan, tethering)"
 # LAN interface
 uci set network.lan=interface
 uci set network.lan.device='br-lan'
@@ -31,42 +26,10 @@ uci set network.lan.ipaddr='192.168.1.1'
 uci set network.lan.netmask='255.255.255.0'
 uci del network.lan.ip6assign
 
-# ModemManager interface
-uci set network.modemmanager=interface
-uci set network.modemmanager.proto='modemmanager'
-uci set network.modemmanager.device='/sys/devices/pci0000:00/0000:00:15.0/usb2/2-1/2-1.1'
-uci set network.modemmanager.apn='internet'
-uci set network.modemmanager.auth='none'
-uci set network.modemmanager.iptype='ipv4'
-uci set network.modemmanager.loglevel='ERR'
-uci set network.modemmanager.metric='10'
-uci set network.modemmanager.force_connection='1'
-
-# WAN interface
-uci set network.wan=interface
-uci set network.wan.proto='dhcp'
-uci set network.wan.device='eth1'
-uci set network.wan.metric='1'
-uci del network.wan6
-
 # Tethering interface
 uci set network.tethering=interface
 uci set network.tethering.proto='dhcp'
 uci set network.tethering.device='usb0'
-uci set network.tethering.metric='2'
-
-# Chilli interface
-uci set network.chilli=interface
-uci set network.chilli.proto='none'
-uci set network.chilli.device='tun0'
-
-# Hotspot Voucher interface
-uci set network.hotspot_voucher=interface
-uci set network.hotspot_voucher.proto='static'
-uci set network.hotspot_voucher.ipaddr='10.10.30.1'
-uci set network.hotspot_voucher.netmask='255.255.255.0'
-uci set network.hotspot_voucher.device='br-voucher'
-
 
 # Step 3: Configure Firewall Zones and Forwarding
 msg "Step 3: Configure Firewall Zones and Forwarding"
@@ -76,7 +39,7 @@ uci set firewall.@zone[0].name='lan'
 uci set firewall.@zone[0].input='ACCEPT'
 uci set firewall.@zone[0].output='ACCEPT'
 uci set firewall.@zone[0].forward='ACCEPT'
-uci set firewall.@zone[0].network='lan hotspot_voucher'
+uci set firewall.@zone[0].network='lan'
 
 # WAN zone
 uci set firewall.@zone[1]=zone
@@ -86,37 +49,18 @@ uci set firewall.@zone[1].output='ACCEPT'
 uci set firewall.@zone[1].forward='REJECT'
 uci set firewall.@zone[1].masq='1'
 uci set firewall.@zone[1].mtu_fix='1'
-uci set firewall.@zone[1].network='wan modemmanager tethering'
+uci set firewall.@zone[1].network='tethering'
 
 # Forwarding from LAN to WAN
 uci set firewall.@forwarding[0]=forwarding
 uci set firewall.@forwarding[0].src='lan'
 uci set firewall.@forwarding[0].dest='wan'
 
-# TUN zone
-uci add firewall zone
-uci set firewall.@zone[-1].name='tun'
-uci set firewall.@zone[-1].input='ACCEPT'
-uci set firewall.@zone[-1].output='ACCEPT'
-uci set firewall.@zone[-1].forward='REJECT'
-uci add_list firewall.@zone[-1].network='chilli'
 
 # Forwarding from TUN to WAN
 uci add firewall forwarding
 uci set firewall.@forwarding[-1].src='tun'
 uci set firewall.@forwarding[-1].dest='wan'
-
-
-# Step 4: Configure Wireless
-msg "Step 4: Configure Wireless"
-uci set wireless.@wifi-device[0].disabled='0'
-uci set wireless.@wifi-iface[0].disabled='0'
-uci set wireless.@wifi-iface[0].encryption='none'
-uci set wireless.@wifi-device[0].country='ID'
-uci set wireless.@wifi-iface[0].ssid='RTA-WRT_2g'
-uci set wireless.@wifi-device[0].channel='1'
-uci set wireless.@wifi-device[0].band='2g'
-
 
 # Step 5: Configure And Add DNS Forwarding (to 1.1.1.1 via DHCP)
 msg "Step 5: Configure And Add DNS Forwarding (to 1.1.1.1 via DHCP)"
@@ -146,7 +90,6 @@ uci del dhcp.lan.dhcpv6
 msg "Step 6: Commit changes"
 uci commit network
 uci commit firewall
-uci commit wireless
 uci commit dhcp
 
 
