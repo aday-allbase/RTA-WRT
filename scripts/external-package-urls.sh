@@ -5,14 +5,14 @@
 # Download packages from official snapshots, stable repo's urls and custom repo's.
 {
 files1=(
-    "lolcat|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
+    #"lolcat|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
     "modemmanager-rpcd|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
     "luci-proto-modemmanager|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/luci"
     "libqmi|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
     "libmbim|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
     "modemmanager|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
-    "sms-tool|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
-    "luci-app-netspeedtest|https://fantastic-packages.github.io/packages/releases/23.05/packages/x86_64/luci"
+    #"sms-tool|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
+    #"luci-app-netspeedtest|https://fantastic-packages.github.io/packages/releases/23.05/packages/x86_64/luci"
     #"python3-speedtest-cli|https://downloads.openwrt.org/releases/packages-$(echo "$BRANCH" | cut -d'.' -f1-2)/$ARCH_3/packages"
     #"librespeed-go|https://downloads.openwrt.org/releases/packages-$(echo "$BRANCH" | cut -d'.' -f1-2)/$ARCH_3/packages"
 )
@@ -60,11 +60,11 @@ if [ "$TYPE" == "AMLOGIC" ]; then
 fi
 
 files2+=(
-    "luci-app-netmonitor|https://api.github.com/repos/rtaserver/rta-packages/releases"
-    "luci-app-base64|https://api.github.com/repos/rtaserver/rta-packages/releases"
-    "luci-app-rakitanmanager|https://api.github.com/repos/rtaserver/RakitanManager/releases"
-    "luci-app-whatsapp-bot|https://api.github.com/repos/Maizil41/whatsapp-bot/releases"
-    "luci-app-radmon-php8|https://api.github.com/repos/Maizil41/RadiusMonitor/releases"
+    #"luci-app-netmonitor|https://api.github.com/repos/rtaserver/rta-packages/releases"
+    #"luci-app-base64|https://api.github.com/repos/rtaserver/rta-packages/releases"
+    #"luci-app-rakitanmanager|https://api.github.com/repos/rtaserver/RakitanManager/releases"
+    #"luci-app-whatsapp-bot|https://api.github.com/repos/Maizil41/whatsapp-bot/releases"
+    #"luci-app-radmon-php8|https://api.github.com/repos/Maizil41/RadiusMonitor/releases"
 )
 
 echo "#########################################"
@@ -104,31 +104,31 @@ done
 
     #===============================================
     input_packages=(
-    "luci-app-zerotier"
-    "tailscale"
-    "luci-app-tailscale"
-    "luci-app-mmconfig"
-    "pdnsd-alt"
-    "brook"
+    #"luci-app-zerotier"
+    #"tailscale"
+    #"luci-app-tailscale"
+    #"luci-app-mmconfig"
+    #"pdnsd-alt"
+    #"brook"
     "luci-app-internet-detector"
     "internet-detector"
     "internet-detector-mod-modem-restart"
-    "luci-app-cpu-status-mini"
-    "luci-app-diskman"
-    "luci-app-disks-info"
-    "luci-app-log"
+    #"luci-app-cpu-status-mini"
+    #"luci-app-diskman"
+    #"luci-app-disks-info"
+    #"luci-app-log"
     "luci-app-temp-status"
     "luci-app-ramfree"
     # "luci-app-tinyfilemanager"
-    "modeminfo"
-    "atinout"
+    #"modeminfo"
+    #"atinout"
     "luci-app-poweroff"
     "xmm-modem"
-    "luci-app-3ginfo-lite"
-    "luci-app-lite-watchdog"
-    "modemband"
-    "luci-app-modemband"
-    "luci-app-sms-tool-js"
+    #"luci-app-3ginfo-lite"
+    #"luci-app-lite-watchdog"
+    #"modemband"
+    #"luci-app-modemband"
+    #"luci-app-sms-tool-js"
     )
     #================================================
     
