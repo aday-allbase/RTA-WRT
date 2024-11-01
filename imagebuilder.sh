@@ -1,17 +1,4 @@
 #!/bin/bash
-#================================================================================================
-# Description: Build OpenWrt with Image Builder
-# Copyright (C) 2021~ https://github.com/unifreq/openwrt_packit
-# Copyright (C) 2021~ https://github.com/ophub/amlogic-s9xxx-openwrt
-# Copyright (C) 2021~ https://downloads.openwrt.org/releases
-# Copyright (C) 2023~ https://downloads.immortalwrt.org/releases
-#
-#
-# Command: ./config/imagebuilder/imagebuilder.sh <source:branch> <target>
-#          ./config/imagebuilder/imagebuilder.sh openwrt:21.02.3 x86_64
-#
-#
-# Set default parameters
 make_path="${PWD}"
 openwrt_dir="imagebuilder"
 imagebuilder_path="${make_path}/${openwrt_dir}"
@@ -25,8 +12,6 @@ INFO="[\033[94m INFO \033[0m]"
 SUCCESS="[\033[92m SUCCESS \033[0m]"
 WARNING="[\033[93m WARNING \033[0m]"
 ERROR="[\033[91m ERROR \033[0m]"
-#
-#================================================================================================
 
 # Encountered a serious error, abort the script execution
 error_msg() {
@@ -284,8 +269,6 @@ adjust_settings() {
 }
 
 # Add custom packages
-# If there is a custom package or ipk you would prefer to use create a [ packages ] directory,
-# If one does not exist and place your custom ipk within this directory.
 custom_packages() {
     cd ${imagebuilder_path}
     echo -e "${STEPS} Start adding custom packages..."
@@ -308,43 +291,24 @@ custom_packages() {
         echo "Adding [luci-app-amlogic] from bulider script type."
         github_packages+=("luci-app-amlogic|https://api.github.com/repos/ophub/luci-app-amlogic/releases/latest")
     fi
-
-    download_packages "github" github_packages[@]
-
-    # Download IPK From Custom
-    other_packages=(
-        #"lolcat|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
+    github_packages+=(
         "modemmanager-rpcd|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
         "luci-proto-modemmanager|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/luci"
         "libqmi|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
         "libmbim|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
         "modemmanager|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
-        #"sms-tool|https://downloads.openwrt.org/snapshots/packages/$ARCH_3/packages"
-        #"luci-app-netspeedtest|https://fantastic-packages.github.io/packages/releases/23.05/packages/x86_64/luci"
-        #"luci-app-zerotier|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"tailscale|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-tailscale|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-mmconfig|https://dllkids.xyz/packages/$ARCH_3"
-        #"pdnsd-alt|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"brook|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
+    )
+    download_packages "github" github_packages[@]
+
+    # Download IPK From Custom
+    other_packages=(
         "luci-app-internet-detector|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
         "internet-detector|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
         "internet-detector-mod-modem-restart|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-cpu-status-mini|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-diskman|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-disks-info|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-log|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
         "luci-app-temp-status|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
         "luci-app-ramfree|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"modeminfo|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"atinout|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
         "luci-app-poweroff|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
         "xmm-modem|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-3ginfo-lite|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-lite-watchdog|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"modemband|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-modemband|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
-        #"luci-app-sms-tool-js|https://dl.openwrt.ai/latest/packages/$ARCH_3/kiddin9"
     )
     download_packages "custom" other_packages[@]
 
@@ -392,12 +356,10 @@ custom_config() {
     
     DTM=$(date '+%d-%M-%Y')
     sed -i "s/Ouc3kNF6/$DTM/g" files/etc/uci-defaults/99-init-settings.sh
-
+    echo -e "${INFO} All custom configuration setup completed!"
 }
 
 # Add custom files
-# The FILES variable allows custom configuration files to be included in images built with Image Builder.
-# The [ files ] directory should be placed in the Image Builder root directory where you issue the make command.
 custom_files() {
     cd ${imagebuilder_path}
     echo -e "${STEPS} Start adding custom files..."
@@ -451,7 +413,6 @@ rebuild_firmware() {
 
     # NAS and Hard disk tools
     PACKAGES+=" kmod-usb-storage kmod-usb-storage-uas ntfs-3g"
-    # PACKAGES+=" luci-app-tinyfilemanager"
 
     # Bandwidth And Network Monitoring
     PACKAGES+=" internet-detector luci-app-internet-detector internet-detector-mod-modem-restart vnstat2 vnstati2 luci-app-vnstat2 iperf3"
@@ -510,7 +471,7 @@ op_target="${2}"
 echo -e "${INFO} Rebuild path: [ ${PWD} ]"
 echo -e "${INFO} Rebuild Source: [ ${op_sourse} ], Branch: [ ${op_branch} ], Target: ${op_target}"
 echo -e "${INFO} Server space usage before starting to compile: \n$(df -hT ${make_path}) \n"
-#
+
 # Perform related operations
 download_imagebuilder
 adjust_settings
@@ -518,7 +479,7 @@ custom_packages
 custom_config
 custom_files
 rebuild_firmware
-#
+
 # Show server end information
 echo -e "Server space usage after compilation: \n$(df -hT ${make_path}) \n"
 # All process completed
