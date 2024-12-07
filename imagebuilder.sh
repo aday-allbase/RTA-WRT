@@ -1,16 +1,5 @@
 #!/bin/bash
-#================================================================================================
-# Description: Build OpenWrt with Image Builder
-# Copyright (C) 2021~ https://github.com/unifreq/openwrt_packit
-# Copyright (C) 2021~ https://github.com/ophub/amlogic-s9xxx-openwrt
-# Copyright (C) 2021~ https://downloads.openwrt.org/releases
-# Copyright (C) 2023~ https://downloads.immortalwrt.org/releases
-#
-#
-# Command: ./config/imagebuilder/imagebuilder.sh <source:branch> <target>
-#          ./config/imagebuilder/imagebuilder.sh openwrt:21.02.3 x86_64
-#
-#
+
 # Set default parameters
 make_path="${PWD}"
 openwrt_dir="imagebuilder"
@@ -25,8 +14,6 @@ INFO="[\033[94m INFO \033[0m]"
 SUCCESS="[\033[92m SUCCESS \033[0m]"
 WARNING="[\033[93m WARNING \033[0m]"
 ERROR="[\033[91m ERROR \033[0m]"
-#
-#================================================================================================
 
 # Encountered a serious error, abort the script execution
 error_msg() {
@@ -321,8 +308,6 @@ adjust_settings() {
 }
 
 # Add custom packages
-# If there is a custom package or ipk you would prefer to use create a [ packages ] directory,
-# If one does not exist and place your custom ipk within this directory.
 custom_packages() {
     cd ${imagebuilder_path}
     echo -e "${STEPS} Start adding custom packages..."
@@ -345,48 +330,19 @@ custom_packages() {
         echo "Adding [luci-app-amlogic] from bulider script type."
         github_packages+=("luci-app-amlogic|https://api.github.com/repos/ophub/luci-app-amlogic/releases/latest")
     fi
-    github_packages+=(
-        "luci-app-netmonitor|https://api.github.com/repos/rtaserver/rta-packages/releases"
-        "luci-app-base64|https://api.github.com/repos/rtaserver/rta-packages/releases"
-    )
     download_packages "github" github_packages[@]
 
     # Download IPK From Custom
     CURVER=$(echo $op_branch | awk -F. '{print $1"."$2}')
     other_packages=(
-        "modemmanager-rpcd|https://downloads.$op_sourse.org/releases/packages-24.10/$ARCH_3/packages"
-        "luci-proto-modemmanager|https://downloads.$op_sourse.org/releases/packages-24.10/$ARCH_3/luci"
-        "libqmi|https://downloads.$op_sourse.org/releases/packages-24.10/$ARCH_3/packages"
-        "libmbim|https://downloads.$op_sourse.org/releases/packages-24.10/$ARCH_3/packages"
-        "modemmanager|https://downloads.$op_sourse.org/releases/packages-24.10/$ARCH_3/packages"
-        "sms-tool|https://downloads.$op_sourse.org/releases/packages-24.10/$ARCH_3/packages"
-        "tailscale|https://downloads.$op_sourse.org/releases/packages-24.10/$ARCH_3/packages"
-        "python3-speedtest-cli|https://downloads.openwrt.org/releases/packages-$CURVER/$ARCH_3/packages"
-
-        "luci-app-tailscale|https://dl.openwrt.ai/$CURVER/packages/$ARCH_3/kiddin9"
-        "luci-app-diskman|https://dl.openwrt.ai/$CURVER/packages/$ARCH_3/kiddin9"
-        "modeminfo|https://dl.openwrt.ai/$CURVER/packages/$ARCH_3/kiddin9"
-        "atinout|https://dl.openwrt.ai/$CURVER/packages/$ARCH_3/kiddin9"
-        "luci-app-poweroff|https://dl.openwrt.ai/$CURVER/packages/$ARCH_3/kiddin9"
-        "xmm-modem|https://dl.openwrt.ai/$CURVER/packages/$ARCH_3/kiddin9"
-        "luci-app-lite-watchdog|https://dl.openwrt.ai/$CURVER/packages/$ARCH_3/kiddin9"
-
-        "luci-app-internet-detector|https://github.com/gSpotx2f/packages-openwrt/raw/refs/heads/master/current"
-        "internet-detector|https://github.com/gSpotx2f/packages-openwrt/raw/refs/heads/master/current"
-        "internet-detector-mod-modem-restart|https://github.com/gSpotx2f/packages-openwrt/raw/refs/heads/master/current"
-        "luci-app-cpu-status-mini|https://github.com/gSpotx2f/packages-openwrt/raw/refs/heads/master/current"
-        "luci-app-disks-info|https://github.com/gSpotx2f/packages-openwrt/raw/refs/heads/master/current"
-        "luci-app-log-viewer|https://github.com/gSpotx2f/packages-openwrt/raw/refs/heads/master/current"
-        "luci-app-temp-status|https://github.com/gSpotx2f/packages-openwrt/raw/refs/heads/master/current"
-        
-        "luci-app-zerotier|https://downloads.immortalwrt.org/releases/packages-24.10/$ARCH_3/luci"
-        "luci-app-ramfree|https://downloads.immortalwrt.org/releases/packages-24.10/$ARCH_3/luci"
-        "luci-app-3ginfo-lite|https://downloads.immortalwrt.org/releases/packages-24.10/$ARCH_3/luci"
-        "modemband|https://downloads.immortalwrt.org/releases/packages-24.10/$ARCH_3/packages"
-        "luci-app-modemband|https://downloads.immortalwrt.org/releases/packages-24.10/$ARCH_3/luci"
-        "luci-app-sms-tool-js|https://downloads.immortalwrt.org/releases/packages-24.10/$ARCH_3/luci"
-
-        "luci-app-netspeedtest|https://fantastic-packages.github.io/packages/releases/$CURVER/packages/x86_64/luci"
+        "modemmanager-rpcd|https://dl.openwrt.ai/packages-24.10/$ARCH_3/packages"
+        "luci-app-diskman|https://dl.openwrt.ai/packages-24.10/$ARCH_3/kiddin9"
+        "xmm-modem|https://dl.openwrt.ai/packages-24.10/$ARCH_3/kiddin9"
+        "luci-app-internet-detector|https://dl.openwrt.ai/packages-24.10/$ARCH_3/kiddin9"
+        "internet-detector|https://dl.openwrt.ai/packages-24.10/$ARCH_3/kiddin9"
+        "internet-detector-mod-modem-restart|https://dl.openwrt.ai/packages-24.10/$ARCH_3/kiddin9"
+        "luci-app-temp-status|https://dl.openwrt.ai/packages-24.10/$ARCH_3/kiddin9"
+        "luci-app-ramfree|https://dl.openwrt.ai/packages-24.10/$ARCH_3/kiddin9"
     )
     download_packages "custom" other_packages[@]
 
@@ -404,21 +360,8 @@ custom_packages() {
         clash_meta="$(meta_api="https://api.github.com/repos/MetaCubeX/mihomo/releases/latest" && meta_file="mihomo-linux-$ARCH_1" && curl -s ${meta_api} | grep "browser_download_url" | grep -oE "https.*${meta_file}-v[0-9]+\.[0-9]+\.[0-9]+\.gz" | head -n 1)"
     fi
 
-    # Mihomo
-    mihomo_api="https://api.github.com/repos/rtaserver/OpenWrt-mihomo-Mod/releases"
-    mihomo_file_ipk="mihomo_${ARCH_3}-openwrt-23.05" #$op_branch | cut -d '.' -f 1-2
-    mihomo_file_ipk_down="$(curl -s ${mihomo_api} | grep "browser_download_url" | grep -oE "https.*${mihomo_file_ipk}.*.tar.gz" | head -n 1)"
-
-    #passwall
-    passwall_api="https://api.github.com/repos/xiaorouji/openwrt-passwall/releases"
-    passwall_file_ipk="luci-23.05_luci-app-passwall"
-    passwall_file_zip="passwall_packages_ipk_${ARCH_3}"
-    passwall_file_ipk_down="$(curl -s ${passwall_api} | grep "browser_download_url" | grep -oE "https.*${passwall_file_ipk}.*.ipk" | head -n 1)"
-    passwall_file_zip_down="$(curl -s ${passwall_api} | grep "browser_download_url" | grep -oE "https.*${passwall_file_zip}.*.zip" | head -n 1)"
-
-
     # Output download information
-    echo -e "${STEPS} Installing OpenClash, Mihomo And Passwall"
+    echo -e "${STEPS} Installing OpenClash"
 
     echo -e "${INFO} Downloading OpenClash package"
     curl -fsSOL ${openclash_file_ipk_down}
@@ -431,61 +374,13 @@ custom_packages() {
         error_msg "Error: Failed to extract OpenClash package."
     fi
     echo -e "${INFO} OpenClash Packages downloaded successfully."
-
-    echo -e "${INFO} Downloading Mihomo package"
-    curl -fsSOL ${mihomo_file_ipk_down}
-    if [ "$?" -ne 0 ]; then
-        error_msg "Error: Failed to download Mihomo package."
-    fi
-    tar -xzvf "mihomo_${ARCH_3}-openwrt-23.05.tar.gz" && rm "mihomo_${ARCH_3}-openwrt-23.05.tar.gz"
-    if [ "$?" -ne 0 ]; then
-        error_msg "Error: Failed to extract Mihomo package."
-    fi
-    echo -e "${INFO} Mihomo Packages downloaded successfully."
-
-    echo -e "${INFO} Downloading Passwall package"
-    curl -fsSOL ${passwall_file_ipk_down}
-    if [ "$?" -ne 0 ]; then
-        error_msg "Error: Failed to download Passwall package."
-    fi
-    curl -fsSOL ${passwall_file_zip_down}
-    if [ "$?" -ne 0 ]; then
-        error_msg "Error: Failed to download Passwall Zip package."
-    fi
-    unzip -q "passwall_packages_ipk_${ARCH_3}.zip" && rm "passwall_packages_ipk_${ARCH_3}.zip"
-    if [ "$?" -ne 0 ]; then
-        error_msg "Error: Failed to extract Passwall package."
-    fi
-    echo -e "${INFO} Passwall Packages downloaded successfully."
-
-
+    
     echo -e "${SUCCESS} Download and extraction All complete."
     sync && sleep 3
     echo -e "${INFO} [ packages ] directory status: $(ls -al 2>/dev/null)"
 }
 
-# Add custom packages, lib, theme, app and i18n, etc.
-custom_config() {
-    cd ${imagebuilder_path}
-    echo -e "${STEPS} Start adding custom config..."
-
-    echo -e "${INFO} Downloading custom script" 
-    sync_time="https://raw.githubusercontent.com/frizkyiman/auto-sync-time/main/sbin/sync_time.sh"
-    clock="https://raw.githubusercontent.com/frizkyiman/auto-sync-time/main/usr/bin/clock"
-    repair_ro="https://raw.githubusercontent.com/frizkyiman/fix-read-only/main/install2.sh"
-    mount_hdd="https://raw.githubusercontent.com/frizkyiman/auto-mount-hdd/main/mount_hdd"
-
-    curl -fsSL -o "${custom_files_path}/sbin/sync_time.sh" "${sync_time}"
-    curl -fsSL -o "${custom_files_path}/usr/bin/clock" "${clock}"
-    curl -fsSL -o "${custom_files_path}/root/install2.sh" "${repair_ro}"
-    curl -fsSL -o "${custom_files_path}/usr/bin/mount_hdd" "${mount_hdd}"
-
-    echo -e "${INFO} All custom configuration setup completed!"
-}
-
 # Add custom files
-# The FILES variable allows custom configuration files to be included in images built with Image Builder.
-# The [ files ] directory should be placed in the Image Builder root directory where you issue the make command.
 custom_files() {
     cd ${imagebuilder_path}
     echo -e "${STEPS} Start adding custom files..."
@@ -508,45 +403,28 @@ rebuild_firmware() {
     echo -e "${STEPS} Start building OpenWrt with Image Builder..."
 
     # Selecting default packages, lib, theme, app and i18n, etc.
-    PACKAGES+=" file lolcat kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 kmod-usb-net-asix kmod-usb-net-asix-ax88179"
+    PACKAGES+=" kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 kmod-usb-net-asix kmod-usb-net-asix-ax88179"
     PACKAGES+=" kmod-mii kmod-usb-net kmod-usb-wdm kmod-usb-net-qmi-wwan uqmi \
     kmod-usb-net-cdc-ether kmod-usb-serial-option kmod-usb-serial kmod-usb-serial-wwan qmi-utils \
     kmod-usb-serial-qualcomm kmod-usb-acm kmod-usb-net-cdc-ncm kmod-usb-net-cdc-mbim umbim \
     modemmanager modemmanager-rpcd luci-proto-modemmanager libmbim libqmi usbutils luci-proto-mbim luci-proto-ncm \
     kmod-usb-net-huawei-cdc-ncm kmod-usb-net-cdc-ether kmod-usb-net-rndis kmod-usb-net-sierrawireless kmod-usb-ohci kmod-usb-serial-sierrawireless \
     kmod-usb-uhci kmod-usb2 kmod-usb-ehci kmod-usb-net-ipheth usbmuxd libusbmuxd-utils libimobiledevice-utils usb-modeswitch kmod-nls-utf8 mbim-utils xmm-modem \
-    kmod-phy-broadcom kmod-phylib-broadcom kmod-tg3 iptables-nft"
+    kmod-phy-broadcom kmod-phylib-broadcom kmod-tg3"
     
-    # Modem Tools
-    PACKAGES+=" modeminfo luci-app-modeminfo atinout modemband luci-app-modemband sms-tool luci-app-sms-tool-js luci-app-lite-watchdog luci-app-3ginfo-lite picocom minicom"
-
     # Tunnel option
     OPENCLASH="coreutils-nohup bash dnsmasq-full curl ca-certificates ipset ip-full libcap libcap-bin ruby ruby-yaml kmod-tun kmod-inet-diag unzip kmod-nft-tproxy luci-compat luci luci-base luci-app-openclash"
-    MIHOMO+="mihomo luci-app-mihomo"
-    PASSWALL+="chinadns-ng resolveip dns2socks dns2tcp ipt2socks microsocks tcping xray-core xray-plugin luci-app-passwall"
-    PACKAGES+=" $OPENCLASH $MIHOMO $PASSWALL"
-
-    # Remote Services
-    PACKAGES+=" luci-app-zerotier luci-app-cloudflared tailscale luci-app-tailscale"
-
+    PACKAGES+=" $OPENCLASH"
+    
     # NAS and Hard disk tools
-    PACKAGES+=" luci-app-diskman luci-app-hd-idle luci-app-disks-info smartmontools kmod-usb-storage kmod-usb-storage-uas ntfs-3g"
-
-    # Docker
-    PACKAGES+=" docker docker-compose dockerd luci-app-dockerman"
-
+    PACKAGES+=" luci-app-diskman kmod-usb-storage kmod-usb-storage-uas ntfs-3g"
+    
     # Bandwidth And Network Monitoring
-    PACKAGES+=" internet-detector luci-app-internet-detector internet-detector-mod-modem-restart nlbwmon luci-app-nlbwmon vnstat2 vnstati2 luci-app-vnstat2 luci-app-netmonitor"
-
-    # Speedtest
-    PACKAGES+=" librespeed-go python3-speedtest-cli iperf3 luci-app-netspeedtest"
-
-    # Base64 Encode Decode
-    PACKAGES+=" luci-app-base64"
-
+    PACKAGES+=" internet-detector luci-app-internet-detector internet-detector-mod-modem-restart vnstat2 vnstati2 luci-app-vnstat2 iperf3"
+    
     # Material Theme
     PACKAGES+=" luci-theme-material"
-
+    
     # PHP8
     PACKAGES+=" libc php8 php8-fastcgi php8-fpm coreutils-stat zoneinfo-asia php8-cgi \
     php8-cli php8-mod-bcmath php8-mod-calendar php8-mod-ctype php8-mod-curl php8-mod-dom php8-mod-exif \
@@ -557,7 +435,7 @@ rebuild_firmware() {
     # Misc and some custom .ipk files
     misc=""
     if [ "$op_target" == "openwrt" ]; then
-        misc+=" luci-app-temp-status luci-app-cpu-status-mini"
+        misc+=" luci-app-temp-status"
     elif [ "$op_target" == "immortalwrt" ]; then
         misc+=" "
     fi
@@ -573,7 +451,7 @@ rebuild_firmware() {
         EXCLUDED+=" -procd-ujail"
     fi
 
-    PACKAGES+=" $misc zram-swap adb parted losetup resize2fs luci luci-ssl block-mount luci-app-poweroff luci-app-log-viewer luci-app-ramfree htop bash curl wget wget-ssl tar unzip unrar gzip jq luci-app-ttyd nano httping screen openssh-sftp-server"
+    PACKAGES+=" $misc zram-swap adb parted losetup resize2fs luci luci-ssl block-mount luci-app-poweroff luci-app-ramfree htop bash curl wget wget-ssl tar unzip unrar gzip jq luci-app-ttyd nano httping screen openssh-sftp-server"
 
     # Exclude package (must use - before packages name)
     EXCLUDED+=" -libgd"
@@ -616,7 +494,6 @@ echo -e "${INFO} Server space usage before starting to compile: \n$(df -hT ${mak
 download_imagebuilder
 adjust_settings
 custom_packages
-custom_config
 custom_files
 rebuild_firmware
 #
