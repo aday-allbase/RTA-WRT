@@ -1,35 +1,147 @@
-# CONTOH FORMAT
-# https://blog.vpngame.com/openwrt/kumpulan-daftar-format-akun-untuk-openclash/
 proxies:
-- name: Vmess WS
-  # interface-name: eth1
-  type: vmess
-  server: SERVER.COM
-  port: 443
-  uuid: UUID
-  alterId: 0
-  cipher: auto
-  udp: true
-  tls: true
-  skip-cert-verify: true
-  servername: SERVER.COM
-  network: ws
-  ws-opts:
-    path: /PATH
-    headers:
-      Host: SERVER.COM
+  - name: vvip-aday647321
+    server: waves.digitalocean.com
+    port: 443
+    type: vmess
+    uuid: 9b7ed73e-b61f-4ee4-8e2b-4550f8e71e2d
+    alterId: 0
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: id2ray.jagoan.vip
+    network: ws
+    ws-opts:
+      path: /vvip
+      headers:
+        Host: id2ray.jagoan.vip
+    udp: true
 
-- name: Trojan WS
-  # interface-name: eth1
-  server: SERVER.COM
-  port: 443
-  type: trojan
-  password: PASSWORD
-  skip-cert-verify: true
-  sni: SERVER.COM
-  network: ws
-  ws-opts:
-    path: /PATH
-    headers:
-      Host: SERVER.COM
-  udp: true
+  - name: (ID) Herza
+    server: waves.digitalocean.com
+    port: 443
+    type: vless
+    uuid: 27cd1d40-9c52-402c-8568-64711c267eab
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: waves.digitalocean.com.vd.aday.my.id
+    network: ws
+    ws-opts:
+      path: /vl=103.168.146.169=20132
+      headers:
+        Host: waves.digitalocean.com.vd.aday.my.id
+    udp: true
+    
+  - name: ID (Google)
+    server: waves.digitalocean.com
+    port: 443
+    type: vless
+    uuid: 27cd1d40-9c52-402c-8568-64711c267eab
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: waves.digitalocean.com.vd.aday.my.id
+    network: ws
+    ws-opts:
+      path: /vl=35.219.15.90=443
+      headers:
+        Host: waves.digitalocean.com.vd.aday.my.id
+    udp: true
+    
+  - name: ID (Cloud Teknologi Nusantara)
+    server: waves.digitalocean.com
+    port: 443
+    type: vless
+    uuid: 27cd1d40-9c52-402c-8568-64711c267eab
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: waves.digitalocean.com.vd.aday.my.id
+    network: ws
+    ws-opts:
+      path: /vl=103.133.223.50=2096
+      headers:
+        Host: waves.digitalocean.com.vd.aday.my.id
+    udp: true
+    
+  - name: ID (Pusat Media Indonesia)
+    server: waves.digitalocean.com
+    port: 443
+    type: vless
+    uuid: 27cd1d40-9c52-402c-8568-64711c267eab
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: waves.digitalocean.com.vd.aday.my.id
+    network: ws
+    ws-opts:
+      path: /vl=103.6.207.108=8080
+      headers:
+        Host: waves.digitalocean.com.vd.aday.my.id
+    udp: true
+    
+  - name: ID (Akamai)
+    server: waves.digitalocean.com
+    port: 443
+    type: vless
+    uuid: 27cd1d40-9c52-402c-8568-64711c267eab
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: waves.digitalocean.com.vd.aday.my.id
+    network: ws
+    ws-opts:
+      path: /vl=172.232.239.151=587
+      headers:
+        Host: waves.digitalocean.com.vd.aday.my.id
+    udp: true
+    
+  - name: ID (Tencent)
+    server: waves.digitalocean.com
+    port: 443
+    type: vless
+    uuid: 27cd1d40-9c52-402c-8568-64711c267eab
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: waves.digitalocean.com.vd.aday.my.id
+    network: ws
+    ws-opts:
+      path: /vl=43.133.145.156=53136
+      headers:
+        Host: waves.digitalocean.com.vd.aday.my.id
+    udp: true
+    
+  - name: ID (First Cagayan)
+    server: waves.digitalocean.com
+    port: 443
+    type: vless
+    uuid: 27cd1d40-9c52-402c-8568-64711c267eab
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: waves.digitalocean.com.vd.aday.my.id
+    network: ws
+    ws-opts:
+      path: /vl=203.194.112.119=8443
+      headers:
+        Host: waves.digitalocean.com.vd.aday.my.id
+    udp: true
+
+#
+
+  - name: Tencent(ID)
+    server: waves.digitalocean.com
+    port: 443
+    type: vless
+    uuid: 7794dffb-5de7-4d70-9ca2-fe16a132a84b
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: xray.xrayall.workers.dev
+    network: ws
+    ws-opts:
+      path: /id8
+      headers:
+        Host: xray.xrayall.workers.dev
+    udp: true

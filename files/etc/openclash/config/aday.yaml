@@ -1,0 +1,69 @@
+---
+proxy-groups:
+- name: SERVER-FALLBACK
+  type: fallback
+  disable-udp: false
+  use:
+  - PP-Indo
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+- name: SERVER-LOADBALANCE
+  type: load-balance
+  strategy: round-robin
+  disable-udp: false
+  use:
+  - PP-Indo
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+- name: SERVER-UMUM
+  type: select
+  disable-udp: false
+  use:
+  - PP-Indo
+- name: SERVER-GAME
+  type: select
+  disable-udp: false
+  use:
+  - PP-Indo
+- name: SERVER-SOSMED
+  type: select
+  disable-udp: false
+  use:
+  - PP-Indo
+- name: SERVER-SPEEDTEST
+  type: select
+  disable-udp: false
+  use:
+  - PP-Indo
+#
+proxy-providers:
+  PP-Indo:
+    type: file
+    path: "./proxy_provider/pp-indo.yaml"
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 180
+#
+rule-providers:
+  RP-Game:
+    type: file
+    behavior: classical
+    path: "./rule_provider/mlbb.yaml"
+#
+rules:
+- AND,((NETWORK,udp),(OR,((DST-PORT,443),(GEOSITE,youtube)))),REJECT
+- GEOIP,GOOGLE,SERVER-SOSMED
+- GEOSITE,GOOGLE,SERVER-SOSMED
+- GEOSITE,rule-gaming,SERVER-GAME
+- RULE-SET,RP-Game,SERVER-GAME
+#- GEOSITE,rule-indo,Traffic-Indo
+- GEOSITE,rule-sosmed,SERVER-SOSMED
+- GEOSITE,rule-streaming,SERVER-SOSMED
+#- GEOIP,id,Traffic-Indo
+- GEOIP,facebook,SERVER-SOSMED
+- GEOIP,netflix,SERVER-SOSMED
+- GEOIP,telegram,SERVER-SOSMED
+- GEOIP,twitter,SERVER-SOSMED
+- GEOSITE,rule-speedtest,SERVER-SPEEDTEST
+- MATCH,GLOBAL
