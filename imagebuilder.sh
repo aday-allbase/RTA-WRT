@@ -466,7 +466,7 @@ rebuild_firmware() {
 
     # Rebuild firmware
     make clean
-    make image PROFILE="${target_profile}" PACKAGES="${PACKAGES} ${EXCLUDED}" FILES="files"
+    make image PROFILE="${target_profile}" PACKAGES="${PACKAGES} ${EXCLUDED} ${misc}" FILES="files"
     if [ $? -ne 0 ]; then
         error_msg "OpenWrt build failed. Check logs for details."
     else

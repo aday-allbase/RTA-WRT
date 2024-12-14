@@ -1,0 +1,32 @@
+proxies:
+- name: Herza(akun)
+  server: 104.22.4.240
+  port: 443
+  type: vless
+  uuid: 53e8828b-e55a-47a1-9798-8e2fe4be8262
+  cipher: auto
+  tls: true
+  udp: true
+  skip-cert-verify: true
+  network: ws
+  servername: akun.aday.my.id
+  ws-opts:
+    path: /ID3
+    headers:
+      Host: akun.aday.my.id
+
+- name: (allbase)Herza
+  server: 104.22.4.240
+  port: 443
+  type: vless
+  uuid: 3503a9bf-465d-4ccc-b994-15a91f36013a
+  cipher: auto
+  tls: true
+  skip-cert-verify: true
+  servername: allbase.aday.my.id
+  network: ws
+  ws-opts:
+    path: /vl=103.168.146.169=20132
+    headers:
+      Host: allbase.aday.my.id
+  udp: true

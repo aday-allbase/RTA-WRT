@@ -1,0 +1,17 @@
+proxies:
+  - name: vvip-aday647321
+    server: 104.22.4.240
+    port: 443
+    type: vmess
+    uuid: 9b7ed73e-b61f-4ee4-8e2b-4550f8e71e2d
+    alterId: 0
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: id2ray.jagoan.vip
+    network: ws
+    ws-opts:
+      path: /vvip
+      headers:
+        Host: id2ray.jagoan.vip
+    udp: true

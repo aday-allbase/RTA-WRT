@@ -4,59 +4,96 @@ proxy-groups:
   type: fallback
   disable-udp: false
   use:
-  - PP-Indo
+  - PP-Umum
+  - PP-Sosmed
+  - PP-Game
   url: http://www.gstatic.com/generate_204
-  interval: 180
+  interval: 300
 - name: SERVER-LOADBALANCE
   type: load-balance
-  strategy: round-robin
+  strategy: consistent-hashing
   disable-udp: false
   use:
-  - PP-Indo
+  - PP-Umum
+  - PP-Sosmed
+  - PP-Game
   url: http://www.gstatic.com/generate_204
-  interval: 180
+  interval: 300
+- name: BEST-PING
+  type: url-test
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  use:
+  - PP-Umum
+  - PP-Sosmed
+  - PP-Game
 - name: SERVER-UMUM
   type: select
   disable-udp: false
   use:
-  - PP-Indo
+  - PP-Umum
 - name: SERVER-GAME
   type: select
   disable-udp: false
   use:
-  - PP-Indo
+  - PP-Game
+  proxies:
+  - SERVER-FALLBACK
+  - SERVER-LOADBALANCE
 - name: SERVER-SOSMED
   type: select
   disable-udp: false
   use:
-  - PP-Indo
+  - PP-Sosmed
+  proxies:
+  - SERVER-FALLBACK
+  - SERVER-LOADBALANCE
 - name: SERVER-SPEEDTEST
   type: select
   disable-udp: false
   use:
-  - PP-Indo
+  - PP-Umum
+  - PP-Sosmed
+  - PP-Game
+  proxies:
+  - SERVER-LOADBALANCE
 #
 proxy-providers:
-  PP-Indo:
+  PP-Umum:
     type: file
-    path: "./proxy_provider/pp-indo.yaml"
+    path: "./proxy_provider/pp-umum.yaml"
     health-check:
       enable: true
       url: http://www.gstatic.com/generate_204
-      interval: 180
-#
-rule-providers:
-  RP-Game:
+      interval: 300
+  PP-Sosmed:
     type: file
-    behavior: classical
-    path: "./rule_provider/mlbb.yaml"
+    path: "./proxy_provider/pp-sosmed.yaml"
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 300
+  PP-Game:
+    type: file
+    path: "./proxy_provider/pp-game.yaml"
+    health-check:
+      enable: true
+      url: http://www.gstatic.com/generate_204
+      interval: 300
+#
+#rule-providers:
+#  RP-Game:
+#    type: file
+#    behavior: classical
+#    path: "./rule_provider/mlbb.yaml"
 #
 rules:
 - AND,((NETWORK,udp),(OR,((DST-PORT,443),(GEOSITE,youtube)))),REJECT
-- GEOIP,GOOGLE,SERVER-SOSMED
-- GEOSITE,GOOGLE,SERVER-SOSMED
-- GEOSITE,rule-gaming,SERVER-GAME
-- RULE-SET,RP-Game,SERVER-GAME
+#- GEOIP,GOOGLE,SERVER-SOSMED
+#- GEOSITE,GOOGLE,SERVER-SOSMED
+#- GEOSITE,rule-gaming,SERVER-GAME
+#- RULE-SET,RP-Game,SERVER-GAME
 #- GEOSITE,rule-indo,Traffic-Indo
 - GEOSITE,rule-sosmed,SERVER-SOSMED
 - GEOSITE,rule-streaming,SERVER-SOSMED

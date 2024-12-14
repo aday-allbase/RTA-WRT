@@ -1,0 +1,16 @@
+proxies:
+  - name: Sosmed
+    server: 104.22.4.240
+    port: 443
+    type: vless
+    uuid: 7794dffb-5de7-4d70-9ca2-fe16a132a84b
+    cipher: auto
+    tls: true
+    skip-cert-verify: true
+    servername: xray.xrayall.workers.dev
+    network: ws
+    ws-opts:
+      path: /id8
+      headers:
+        Host: xray.xrayall.workers.dev
+    udp: true
