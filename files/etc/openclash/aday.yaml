@@ -33,10 +33,14 @@ proxy-groups:
   disable-udp: false
   use:
   - PP-Umum
+  - PP-Sosmed
+  - PP-Game
 - name: SERVER-GAME
   type: select
   disable-udp: false
   use:
+  - PP-Umum
+  - PP-Sosmed
   - PP-Game
   proxies:
   - SERVER-FALLBACK
@@ -45,7 +49,9 @@ proxy-groups:
   type: select
   disable-udp: false
   use:
+  - PP-Umum
   - PP-Sosmed
+  - PP-Game
   proxies:
   - SERVER-FALLBACK
   - SERVER-LOADBALANCE
@@ -85,6 +91,9 @@ rules:
 - DST-PORT,7892,REJECT
 - IP-CIDR,198.18.0.1/16,REJECT,no-resolve
 - AND,((NETWORK,udp),(OR,((DST-PORT,443),(GEOSITE,youtube)))),REJECT
+- GEOIP,GOOGLE,SERVER-GAME
+- GEOSITE,GOOGLE,SERVER-GAME
+- GEOSITE,rule-gaming,SERVER-GAME
 - GEOSITE,rule-sosmed,SERVER-SOSMED
 - GEOSITE,rule-streaming,SERVER-SOSMED
 - GEOIP,facebook,SERVER-SOSMED
