@@ -27,7 +27,7 @@ cp /etc/openwrt_release /root/config_backup/
 
 # Firmware customization
 log "Customizing firmware information..."
-sed -i "s#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||''),#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' build by RTA-WRT [ Ouc3kNF6 ]':''),#g" /www/luci-static/resources/view/status/include/10_system.js
+sed -i "s#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||''),#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' build by OPEN-WRT [ Ouc3kNF6 ]':''),#g" /www/luci-static/resources/view/status/include/10_system.js
 sed -i -E "s|icons/port_%s.png|icons/port_%s.gif|g" /www/luci-static/resources/view/status/include/29_ports.js
 
 # Detect and configure for specific OpenWrt distributions
@@ -48,11 +48,11 @@ log "Tunnel Applications Installed: $(opkg list-installed | grep -e luci-app-ope
 
 # System user configuration
 log "Setting up root password..."
-(echo "rtawrt"; sleep 1; echo "rtawrt") | passwd > /dev/null
+(echo "root"; sleep 1; echo "root") | passwd > /dev/null
 
 # Time zone and NTP configuration
 log "Setting up time zone to Asia/Jakarta and NTP servers..."
-uci set system.@system[0].hostname='RTA-WRT'
+uci set system.@system[0].hostname='OPEN-WRT'
 uci set system.@system[0].timezone='WIB-7'
 uci set system.@system[0].zonename='Asia/Jakarta'
 uci -q delete system.ntp.server
@@ -126,7 +126,7 @@ setup_wireless() {
       uci set wireless.default_radio$device_count.device="radio$device_count"
       uci set wireless.default_radio$device_count.network='lan'
       uci set wireless.default_radio$device_count.mode='ap'
-      uci set wireless.default_radio$device_count.ssid="RTA-WRT_5G"
+      uci set wireless.default_radio$device_count.ssid="OPEN-WRT_5G"
       uci set wireless.default_radio$device_count.encryption='psk2'
       uci set wireless.default_radio$device_count.key='rtawrt123'
       uci set wireless.default_radio$device_count.disabled='0'
@@ -146,7 +146,7 @@ setup_wireless() {
       uci set wireless.default_radio$device_count.device="radio$device_count"
       uci set wireless.default_radio$device_count.network='lan'
       uci set wireless.default_radio$device_count.mode='ap'
-      uci set wireless.default_radio$device_count.ssid="RTA-WRT_2G"
+      uci set wireless.default_radio$device_count.ssid="OPEN-WRT_2G"
       uci set wireless.default_radio$device_count.encryption='psk2'
       uci set wireless.default_radio$device_count.key='rtawrt123'
       uci set wireless.default_radio$device_count.disabled='0'
@@ -191,7 +191,7 @@ echo "src/gz openwrt_packages https://dl.openwrt.ai/latest/packages/$(grep "OPEN
 # UI configuration
 log "Setting up UI configuration..."
 # Set RTAWRT as default theme
-uci set luci.main.mediaurlbase='/luci-static/rtawrt' && uci commit
+uci set luci.main.mediaurlbase='/luci-static/material' && uci commit
 echo >> /usr/share/ucode/luci/template/header.ut && cat /usr/share/ucode/luci/template/theme.txt >> /usr/share/ucode/luci/template/header.ut
 rm -rf /usr/share/ucode/luci/template/theme.txt
 
@@ -220,16 +220,6 @@ edit_usb_mode_json "1e2d:00b3" # Thales MV31-W T99W175
 log "Disabling XMM modem service..."
 uci set xmm-modem.@xmm-modem[0].enable='0'
 uci commit xmm-modem
-
-# Traffic monitoring configuration
-log "Setting up traffic monitoring..."
-# Configure nlbwmon
-uci set nlbwmon.@nlbwmon[0].database_directory='/etc/nlbwmon'
-uci set nlbwmon.@nlbwmon[0].commit_interval='3h'
-uci set nlbwmon.@nlbwmon[0].refresh_interval='30s'
-uci set nlbwmon.@nlbwmon[0].database_limit='10000'
-uci commit nlbwmon
-/etc/init.d/nlbwmon restart
 
 # Configure vnstat for traffic statistics
 log "Setting up vnstat..."
@@ -264,6 +254,8 @@ done
 if [ -f "/root/install2.sh" ]; then
   chmod +x /root/install2.sh && /root/install2.sh
 fi
+
+chmod +x /usr/bin/speedtest
 
 # Configure OpenClash if installed
 log "Checking and configuring OpenClash..."
@@ -308,28 +300,6 @@ else
   uci commit internet-detector 2>/dev/null
   service internet-detector restart
   rm -rf /etc/config/openclash1
-fi
-
-# Configure Nikki if installed
-log "Checking and configuring Nikki..."
-if opkg list-installed | grep -q luci-app-nikki; then
-  log "Nikki detected, configuring..."
-  # Create directory structure if it doesn't exist
-  mkdir -p /etc/nikki/run
-  
-  # Set permissions for core files
-  for file in /etc/nikki/run/GeoIP.dat /etc/nikki/run/GeoSite.dat; do
-    if [ -f "$file" ]; then
-      chmod +x "$file"
-      log "Set permissions for $file"
-    fi
-  done
-  
-  log "Nikki setup complete!"
-else
-  log "Nikki not detected, cleaning up..."
-  rm -rf /etc/config/nikki
-  rm -rf /etc/nikki
 fi
 
 # Setup PHP for web applications
