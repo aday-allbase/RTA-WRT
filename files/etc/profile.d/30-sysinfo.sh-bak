@@ -202,7 +202,7 @@ fi
 cpu_tempx="$(echo ${cpu_temp} | sed -e 's/°C//g' -e 's/[ ][ ]*//g')"
 [[ "$(echo ${cpu_tempx} | awk -F'.' '{print $1}' | wc -c)" -gt "3" ]] && cpu_tempx="${cpu_tempx:0:2}.0"
 # board type
-Buildfirmware="RTA-WRT - RizkiKotet"
+Buildfirmware="OPEN-WRT - Aday"
 print_machine() {
     local Machine=""
     local CPU_Info=""
@@ -501,8 +501,8 @@ print_vpn() {
 print_extra() {
     ([ "$ExtraName" != "" ] || [ "$ExtraValue" != "" ]) && print_line "$ExtraName $ValueColor$ExtraValue$NormalColor"
     printf "\n"
-    print_line "${NormalColor}Github : ${ValueColor}https://github.com/rizkikotet-dev"
-    print_line "${NormalColor}Telegram : ${ValueColor}https://t.me/RizkiKotet"
+    print_line "${NormalColor}Github : ${ValueColor}https://github.com/aday-allbase"
+    print_line "${NormalColor}Telegram : ${ValueColor}https://t.me/ClassesCrack"
 }
 
 print_bottom_line() {

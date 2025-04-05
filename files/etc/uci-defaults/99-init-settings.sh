@@ -27,7 +27,7 @@ cp /etc/openwrt_release /root/config_backup/
 
 # Firmware customization
 log "Customizing firmware information..."
-sed -i "s#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||''),#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' build by RTA-WRT [ Ouc3kNF6 ]':''),#g" /www/luci-static/resources/view/status/include/10_system.js
+sed -i "s#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||''),#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' build OPEN-WRT [ Ouc3kNF6 ]':''),#g" /www/luci-static/resources/view/status/include/10_system.js
 sed -i -E "s|icons/port_%s.png|icons/port_%s.gif|g" /www/luci-static/resources/view/status/include/29_ports.js
 
 # Detect and configure for specific OpenWrt distributions
@@ -48,11 +48,11 @@ log "Tunnel Applications Installed: $(opkg list-installed | grep -e luci-app-ope
 
 # System user configuration
 log "Setting up root password..."
-(echo "rtawrt"; sleep 1; echo "rtawrt") | passwd > /dev/null
+(echo "root"; sleep 1; echo "root") | passwd > /dev/null
 
 # Time zone and NTP configuration
 log "Setting up time zone to Asia/Jakarta and NTP servers..."
-uci set system.@system[0].hostname='RTA-WRT'
+uci set system.@system[0].hostname='OPEN-WRT'
 uci set system.@system[0].timezone='WIB-7'
 uci set system.@system[0].zonename='Asia/Jakarta'
 uci -q delete system.ntp.server
@@ -68,26 +68,18 @@ log "Configuring network interfaces..."
 # LAN configuration
 uci set network.lan.ipaddr="192.168.1.1"
 uci set network.lan.netmask="255.255.255.0"
-uci set network.lan.dns="8.8.8.8,1.1.1.1"
 
 # WAN configuration
-uci set network.wan=interface 
-uci set network.wan.proto='modemmanager'
-uci set network.wan.device='/sys/devices/platform/scb/fd500000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0/usb2/2-1'
-uci set network.wan.apn='internet'
-uci set network.wan.auth='none'
-uci set network.wan.iptype='ipv4'
-
 # Add failover WAN interface
 log "Adding failover WAN interface..."
-uci set network.wan2=interface
-uci set network.wan2.proto='dhcp'
-uci set network.wan2.device='eth1'
+uci set network.wan=interface
+uci set network.wan.proto='dhcp'
+uci set network.wan.device='eth1'
 uci commit network
 
 # Firewall configuration
 log "Configuring firewall..."
-uci set firewall.@zone[1].network='wan wan2'
+uci set firewall.@zone[1].network='wan'
 uci commit firewall
 
 # Disable IPv6
@@ -97,101 +89,15 @@ uci -q delete dhcp.lan.ra
 uci -q delete dhcp.lan.ndp
 uci commit dhcp
 
-# Wireless configuration with auto-detection
-log "Configuring wireless networks..."
-# Function to detect and configure wireless devices
-setup_wireless() {
-  local devices=$(ls /sys/class/ieee80211/)
-  local device_count=0
-  
-  for device in $devices; do
-    local dev_path="/sys/class/ieee80211/$device"
-    local phy_idx=$(echo $device | sed 's/phy//')
-    local hwmode=$(iw phy$phy_idx info | grep -i "band" | head -1)
-    
-    # Determine the band (2.4GHz or 5GHz)
-    if echo "$hwmode" | grep -q "5"; then
-      log "5GHz wireless device detected: $device"
-      uci set wireless.radio$device_count=wifi-device
-      uci set wireless.radio$device_count.type='mac80211'
-      uci set wireless.radio$device_count.path="platform/soc/$device"
-      uci set wireless.radio$device_count.band='5g'
-      uci set wireless.radio$device_count.channel='36'
-      uci set wireless.radio$device_count.htmode='VHT80'
-      uci set wireless.radio$device_count.country='ID'
-      uci set wireless.radio$device_count.disabled='0'
-      
-      # Configure interface for 5GHz
-      uci set wireless.default_radio$device_count=wifi-iface
-      uci set wireless.default_radio$device_count.device="radio$device_count"
-      uci set wireless.default_radio$device_count.network='lan'
-      uci set wireless.default_radio$device_count.mode='ap'
-      uci set wireless.default_radio$device_count.ssid="RTA-WRT_5G"
-      uci set wireless.default_radio$device_count.encryption='psk2'
-      uci set wireless.default_radio$device_count.key='rtawrt123'
-      uci set wireless.default_radio$device_count.disabled='0'
-    else
-      log "2.4GHz wireless device detected: $device"
-      uci set wireless.radio$device_count=wifi-device
-      uci set wireless.radio$device_count.type='mac80211'
-      uci set wireless.radio$device_count.path="platform/soc/$device"
-      uci set wireless.radio$device_count.band='2g'
-      uci set wireless.radio$device_count.channel='6'
-      uci set wireless.radio$device_count.htmode='HT20'
-      uci set wireless.radio$device_count.country='ID'
-      uci set wireless.radio$device_count.disabled='0'
-      
-      # Configure interface for 2.4GHz
-      uci set wireless.default_radio$device_count=wifi-iface
-      uci set wireless.default_radio$device_count.device="radio$device_count"
-      uci set wireless.default_radio$device_count.network='lan'
-      uci set wireless.default_radio$device_count.mode='ap'
-      uci set wireless.default_radio$device_count.ssid="RTA-WRT_2G"
-      uci set wireless.default_radio$device_count.encryption='psk2'
-      uci set wireless.default_radio$device_count.key='rtawrt123'
-      uci set wireless.default_radio$device_count.disabled='0'
-    fi
-    
-    device_count=$((device_count + 1))
-  done
-  
-  # Commit and restart wireless
-  if [ $device_count -gt 0 ]; then
-    uci commit wireless
-    wifi reload && wifi up
-    log "$device_count wireless devices configured."
-    
-    # Add wireless maintenance scripts
-    if ! grep -q "wifi up" /etc/rc.local; then
-      sed -i '/exit 0/i # Wireless maintenance' /etc/rc.local
-      sed -i '/exit 0/i sleep 15 && wifi up' /etc/rc.local
-    fi
-    
-    if ! grep -q "wifi up" /etc/crontabs/root; then
-      echo "# Wireless maintenance - Auto restart every 12 hours" >> /etc/crontabs/root
-      echo "0 */12 * * * wifi down && sleep 5 && wifi up" >> /etc/crontabs/root
-      service cron restart
-    fi
-  else
-    log "No wireless devices detected."
-  fi
-}
-
-# Call the wireless setup function
-setup_wireless
-
 # Package management and repositories
 log "Setting up package management and repositories..."
 # Disable signature check for opkg
 sed -i 's/option check_signature/# option check_signature/g' /etc/opkg.conf
 
-# Add custom repositories
-echo "src/gz openwrt_packages https://dl.openwrt.ai/latest/packages/$(grep "OPENWRT_ARCH" /etc/os-release | awk -F '"' '{print $2}')/kiddin9" >> /etc/opkg/customfeeds.conf
-
 # UI configuration
 log "Setting up UI configuration..."
-# Set RTAWRT as default theme
-uci set luci.main.mediaurlbase='/luci-static/rtawrt' && uci commit
+# Set material as default theme
+uci set luci.main.mediaurlbase='/luci-static/material' && uci commit
 echo >> /usr/share/ucode/luci/template/header.ut && cat /usr/share/ucode/luci/template/theme.txt >> /usr/share/ucode/luci/template/header.ut
 rm -rf /usr/share/ucode/luci/template/theme.txt
 
@@ -221,16 +127,6 @@ log "Disabling XMM modem service..."
 uci set xmm-modem.@xmm-modem[0].enable='0'
 uci commit xmm-modem
 
-# Traffic monitoring configuration
-log "Setting up traffic monitoring..."
-# Configure nlbwmon
-uci set nlbwmon.@nlbwmon[0].database_directory='/etc/nlbwmon'
-uci set nlbwmon.@nlbwmon[0].commit_interval='3h'
-uci set nlbwmon.@nlbwmon[0].refresh_interval='30s'
-uci set nlbwmon.@nlbwmon[0].database_limit='10000'
-uci commit nlbwmon
-/etc/init.d/nlbwmon restart
-
 # Configure vnstat for traffic statistics
 log "Setting up vnstat..."
 sed -i 's/;DatabaseDir "\/var\/lib\/vnstat"/DatabaseDir "\/etc\/vnstat"/' /etc/vnstat.conf
@@ -242,10 +138,6 @@ if [ -f "/www/vnstati/vnstati.sh" ]; then
   /www/vnstati/vnstati.sh
 fi
 
-# Adjust app categories in LuCI
-log "Adjusting application categories..."
-sed -i 's/services/modem/g' /usr/share/luci/menu.d/luci-app-lite-watchdog.json
-
 # Shell environment and profile setup
 log "Setting up shell environment..."
 sed -i 's/\[ -f \/etc\/banner \] && cat \/etc\/banner/#&/' /etc/profile
@@ -253,17 +145,14 @@ sed -i 's/\[ -n "$FAILSAFE" \] && cat \/etc\/banner.failsafe/#&/' /etc/profile
 
 # Setup utility scripts
 log "Setting up utility scripts..."
-for script in /sbin/sync_time.sh /sbin/free.sh /usr/bin/clock /usr/bin/openclash.sh /usr/bin/cek_sms.sh; do
+for script in /usr/bin/openclash.sh; do
   if [ -f "$script" ]; then
     chmod +x "$script"
     log "Made $script executable"
   fi
 done
 
-# Make install scripts executable
-if [ -f "/root/install2.sh" ]; then
-  chmod +x /root/install2.sh && /root/install2.sh
-fi
+chmod +x /usr/bin/speedtest
 
 # Configure OpenClash if installed
 log "Checking and configuring OpenClash..."
@@ -310,28 +199,6 @@ else
   rm -rf /etc/config/openclash1
 fi
 
-# Configure Nikki if installed
-log "Checking and configuring Nikki..."
-if opkg list-installed | grep -q luci-app-nikki; then
-  log "Nikki detected, configuring..."
-  # Create directory structure if it doesn't exist
-  mkdir -p /etc/nikki/run
-  
-  # Set permissions for core files
-  for file in /etc/nikki/run/GeoIP.dat /etc/nikki/run/GeoSite.dat; do
-    if [ -f "$file" ]; then
-      chmod +x "$file"
-      log "Set permissions for $file"
-    fi
-  done
-  
-  log "Nikki setup complete!"
-else
-  log "Nikki not detected, cleaning up..."
-  rm -rf /etc/config/nikki
-  rm -rf /etc/nikki
-fi
-
 # Setup PHP for web applications
 log "Setting up PHP..."
 uci set uhttpd.main.ubus_prefix='/ubus'
@@ -371,9 +238,6 @@ fi
 log "==================== CONFIGURATION COMPLETE ===================="
 log "All setup tasks completed successfully!"
 log "Cleaning up and finalizing..."
-
-# Remove temporary files
-rm -rf /root/install2.sh /tmp/* 2>/dev/null
 
 # Clean up the setup script
 rm -f /etc/uci-defaults/$(basename $0) 2>/dev/null
