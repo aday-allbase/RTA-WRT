@@ -95,7 +95,7 @@ PACKAGES+=" php8 php8-fastcgi php8-fpm php8-mod-session php8-mod-ctype php8-mod-
 # More
 # PACKAGES+=" luci-app-poweroff luci-app-log-viewer luci-app-ramfree"
 
-PACKAGES+=" luci-app-ramfree"
+PACKAGES+=" luci-app-ramfree luci-app-amlogic"
 
 # Handle profile-specific packages
 handle_profile_packages() {

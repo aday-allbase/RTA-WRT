@@ -89,6 +89,7 @@ packages_custom+=(
     # "luci-app-neko_|https://api.github.com/repos/nosignals/openwrt-neko/releases/latest"
     # "luci-theme-rtawrt_|https://api.github.com/repos/rizkikotet-dev/luci-theme-rtawrt/releases/latest"
     "luci-app-netmonitor_|https://api.github.com/repos/rizkikotet-dev/luci-app-netmonitor/releases/latest"
+    "luci-app-amlogic_|https://api.github.com/repos/ophub/luci-app-amlogic/releases/latest"
 )
 
 if [ "${TYPE}" == "OPHUB" ]; then
