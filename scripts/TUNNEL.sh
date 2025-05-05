@@ -119,25 +119,25 @@ setup_openclash() {
 #}
 
 # Function to remove icons from theme files
-remove_icons() {
-    local icons=("$@")
-    local paths=(
-        "files/usr/share/ucode/luci/template/themes/material/header.ut"
+# remove_icons() {
+#    local icons=("$@")
+#    local paths=(
+#        "files/usr/share/ucode/luci/template/themes/material/header.ut"
 #        "files/usr/lib/lua/luci/view/themes/argon/header.htm"
-    )
+#    )
     
-    for icon in "${icons[@]}"; do
-        for path in "${paths[@]}"; do
-            if [[ -f "${path}" ]]; then
-                log "DEBUG" "Removing icon ${icon} from ${path}"
-                sed -i "/${icon}/d" "${path}" || \
-                    log "WARNING" "Failed to remove icon ${icon} from ${path}"
-            else
-                log "WARNING" "Theme file not found: ${path}"
-            fi
-        done
-    done
-}
+#    for icon in "${icons[@]}"; do
+#        for path in "${paths[@]}"; do
+#            if [[ -f "${path}" ]]; then
+#                log "DEBUG" "Removing icon ${icon} from ${path}"
+#                sed -i "/${icon}/d" "${path}" || \
+#                    log "WARNING" "Failed to remove icon ${icon} from ${path}"
+#            else
+#                log "WARNING" "Theme file not found: ${path}"
+#            fi
+#        done
+#    done
+#}
 
 # Main function
 main() {
