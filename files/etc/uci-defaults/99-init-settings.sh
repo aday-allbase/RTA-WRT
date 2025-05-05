@@ -306,14 +306,6 @@ setup_ui() {
     safe_uci set "luci.main.mediaurlbase" "/luci-static/material"
     commit_uci "luci"
     log "INFO" "Set material as default theme"
-    
-    # Apply theme customizations if needed
-    if [ -f "/usr/share/ucode/luci/template/theme.txt" ]; then
-      echo >> /usr/share/ucode/luci/template/header.ut
-      cat /usr/share/ucode/luci/template/theme.txt >> /usr/share/ucode/luci/template/header.ut
-      rm -rf /usr/share/ucode/luci/template/material.txt 2>/dev/null
-      log "INFO" "Applied theme customizations"
-    fi
   else
     log "WARNING" "MATERIAL theme not found, using default theme"
   fi
