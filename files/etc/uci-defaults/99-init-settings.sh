@@ -126,7 +126,7 @@ customize_firmware() {
   
   if [ -f "$JS_FILE" ]; then
     cp "$JS_FILE" "${JS_FILE}.bak"
-    sed -i "s#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||''),#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' build by RTA-WRT [ Ouc3kNF6 ]':''),#g" "$JS_FILE"
+    sed -i "s#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||''),#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' build OPEN-WRT [ Ouc3kNF6 ]':''),#g" "$JS_FILE"
     check_command "Customize firmware description"
   else
     log "WARNING" "System JS file not found, skipping firmware customization"
@@ -145,7 +145,7 @@ customize_firmware() {
     log "INFO" "ImmortalWrt detected, applying specific configurations..."
     sed -i "s/\(DISTRIB_DESCRIPTION='ImmortalWrt [0-9]*\.[0-9]*\.[0-9]*\).*'/\1'/g" /etc/openwrt_release
     
-    for TEMPLATE_FILE in "/usr/share/ucode/luci/template/themes/material/header.ut" "/usr/lib/lua/luci/view/themes/argon/header.htm"; do
+    for TEMPLATE_FILE in "/usr/share/ucode/luci/template/themes/material/header.ut"; do
       if [ -f "$TEMPLATE_FILE" ]; then
         cp "$TEMPLATE_FILE" "${TEMPLATE_FILE}.bak"
         sed -i -E "s|services/ttyd|system/ttyd|g" "$TEMPLATE_FILE"
@@ -185,7 +185,7 @@ check_tunnel_apps() {
 setup_root_password() {
   log "STEP" "Setting up root password securely..."
   
-  local PASSWORD="rtawrt"
+  local PASSWORD="root"
   (echo "$PASSWORD"; sleep 1; echo "$PASSWORD") | passwd > /dev/null
   check_command "Setting root password"
 }
@@ -194,7 +194,7 @@ setup_root_password() {
 setup_timezone() {
   log "STEP" "Setting up time zone and NTP configuration..."
   
-  safe_uci set "system.@system[0].hostname" "RTA-WRT"
+  safe_uci set "system.@system[0].hostname" "OPEN-WRT"
   safe_uci set "system.@system[0].timezone" "WIB-7"
   safe_uci set "system.@system[0].zonename" "Asia/Jakarta"
   safe_uci delete "system.ntp.server"
@@ -204,12 +204,6 @@ setup_timezone() {
   done
   
   commit_uci "system"
-  
-  # Add time sync script to cron if not already present
-  if [ -f "/sbin/sync_time.sh" ] && ! grep -q "sync_time.sh" /etc/crontabs/root; then
-    echo "0 */6 * * * /sbin/sync_time.sh >/dev/null 2>&1" >> /etc/crontabs/root
-    log "INFO" "Added time sync script to cron"
-  fi
 }
 
 # Configure network interfaces
@@ -222,7 +216,6 @@ setup_network() {
   # LAN configuration
   safe_uci set "network.lan.ipaddr" "192.168.1.1"
   safe_uci set "network.lan.netmask" "255.255.255.0"
-  safe_uci set "network.lan.dns" "8.8.8.8,1.1.1.1"
   
   # WAN configuration with modem support
   safe_uci set "network.wan" "interface"
@@ -290,46 +283,6 @@ disable_ipv6() {
   fi
 }
 
-# Improved wireless setup with error handling
-setup_wireless() {
-  log "STEP" "Configuring wireless networks..."
-  
-  # Backup original wireless config
-  cp /etc/config/wireless /etc/config/wireless.bak 2>/dev/null
-  
-  safe_uci set "wireless.@wifi-device[0].disabled" "0"
-  safe_uci set "wireless.@wifi-iface[0].disabled" "0"
-  safe_uci set "wireless.@wifi-iface[0].encryption" "none"
-  safe_uci set "wireless.@wifi-device[0].country" "ID"
-  if grep -q "Raspberry Pi 4\|Raspberry Pi 3" /proc/cpuinfo; then
-    safe_uci set "wireless.@wifi-iface[0].ssid" "RTA-WRT_5G"
-    safe_uci set "wireless.@wifi-device[0].channel" "149"
-    safe_uci set "wireless.radio0.htmode" "HT40"
-    safe_uci set "wireless.radio0.band" "5g"
-  else
-    safe_uci set "wireless.@wifi-iface[0].ssid" "RTA-WRT_2G"
-    safe_uci set "wireless.@wifi-device[0].channel" "1"
-    safe_uci set "wireless.@wifi-device[0].band" "2g"
-  fi
-  commit_uci wireless
-  wifi reload && wifi up
-  if iw dev | grep -q Interface; then
-    if grep -q "Raspberry Pi 4\|Raspberry Pi 3" /proc/cpuinfo; then
-      if ! grep -q "wifi up" /etc/rc.local; then
-        sed -i '/exit 0/i # remove if you dont use wireless' /etc/rc.local
-        sed -i '/exit 0/i sleep 10 && wifi up' /etc/rc.local
-      fi
-      if ! grep -q "wifi up" /etc/crontabs/root; then
-        echo "# remove if you dont use wireless" >> /etc/crontabs/root
-        echo "0 */12 * * * wifi down && sleep 5 && wifi up" >> /etc/crontabs/root
-        service cron restart
-      fi
-    fi
-  else
-    log "INFO" "No wireless device detected."
-  fi
-}
-
 # Setup package management and repositories
 setup_package_management() {
   log "STEP" "Setting up package management and repositories..."
@@ -342,19 +295,6 @@ setup_package_management() {
     sed -i 's/option check_signature/# option check_signature/g' /etc/opkg.conf
     log "INFO" "Disabled package signature verification"
   fi
-  
-  # Add custom repositories if not already added
-  local ARCH=$(grep "OPENWRT_ARCH" /etc/os-release | awk -F '"' '{print $2}')
-  if [ -n "$ARCH" ]; then
-    local CUSTOM_REPO="src/gz custom_packages https://dl.openwrt.ai/latest/packages/${ARCH}/kiddin9"
-    
-    if ! grep -q "$CUSTOM_REPO" /etc/opkg/customfeeds.conf; then
-      echo "$CUSTOM_REPO" >> /etc/opkg/customfeeds.conf
-      log "INFO" "Added custom package repository for architecture: $ARCH"
-    fi
-  else
-    log "WARNING" "Could not determine system architecture, skipping custom repository"
-  fi
 }
 
 # UI configuration function
@@ -365,7 +305,7 @@ setup_ui() {
   if [ -d "/www/luci-static/material" ]; then
     safe_uci set "luci.main.mediaurlbase" "/luci-static/material"
     commit_uci "luci"
-    log "INFO" "Set RTAWRT as default theme"
+    log "INFO" "Set material as default theme"
     
     # Apply theme customizations if needed
     if [ -f "/usr/share/ucode/luci/template/theme.txt" ]; then
@@ -450,26 +390,6 @@ setup_usb_modem() {
 setup_traffic_monitoring() {
   log "STEP" "Setting up traffic monitoring..."
   
-  # Configure nlbwmon if installed
-  if is_package_installed "nlbwmon"; then
-    log "INFO" "Configuring nlbwmon..."
-    
-    # Create data directory if it doesn't exist
-    mkdir -p /etc/nlbwmon
-    
-    safe_uci set "nlbwmon.@nlbwmon[0].database_directory" "/etc/nlbwmon"
-    safe_uci set "nlbwmon.@nlbwmon[0].commit_interval" "3h"
-    safe_uci set "nlbwmon.@nlbwmon[0].refresh_interval" "30s"
-    safe_uci set "nlbwmon.@nlbwmon[0].database_limit" "10000"
-    commit_uci "nlbwmon"
-    
-    # Restart nlbwmon service
-    /etc/init.d/nlbwmon restart
-    log "INFO" "nlbwmon configured and restarted"
-  else
-    log "INFO" "nlbwmon not installed, skipping configuration"
-  fi
-  
   # Configure vnstat for traffic statistics
   if is_package_installed "vnstat"; then
     log "INFO" "Setting up vnstat..."
@@ -546,7 +466,7 @@ setup_shell_environment() {
   sed -i 's/\[ -n "$FAILSAFE" \] && cat \/etc\/banner.failsafe/#&/' /etc/profile
   
   # Make utility scripts executable
-  for script in /sbin/sync_time.sh /sbin/free.sh /usr/bin/clock /usr/bin/openclash.sh /usr/bin/cek_sms.sh; do
+  for script in /sbin/free.sh /usr/bin/openclash.sh /usr/bin/cek_sms.sh; do
     if [ -f "$script" ]; then
       chmod +x "$script"
       log "INFO" "Made $script executable"
@@ -620,39 +540,6 @@ configure_openclash() {
     
     # Remove leftover configuration
     rm -rf /etc/config/openclash1
-  fi
-}
-
-# Function to configure Nikki if installed
-configure_nikki() {
-  log "STEP" "Checking and configuring Nikki..."
-  
-  if is_package_installed "luci-app-nikki"; then
-    log "INFO" "Nikki detected, configuring..."
-    
-    # Create directory structure if it doesn't exist
-    mkdir -p /etc/nikki/run
-    chmod 755 /etc/nikki
-    
-    # Set permissions for core files
-    for file in /etc/nikki/run/GeoIP.dat /etc/nikki/run/GeoSite.dat; do
-      if [ -f "$file" ]; then
-        chmod +x "$file"
-        log "INFO" "Set permissions for $(basename "$file")"
-      fi
-    done
-    
-    # Check if Nikki is running, start if not
-    if ! pgrep -f nikki >/dev/null; then
-      /etc/init.d/nikki restart
-      log "INFO" "Started Nikki service"
-    fi
-    
-    log "INFO" "Nikki setup complete!"
-  else
-    log "INFO" "Nikki not detected, cleaning up..."
-    rm -rf /etc/config/nikki
-    rm -rf /etc/nikki
   fi
 }
 
@@ -730,31 +617,16 @@ restore_sysinfo() {
   fi
 }
 
-# Function to setup secondary install script
-setup_secondary_install() {
-  log "STEP" "Setting up secondary install script..."
-  
-  # Check if script exists and run it
-  if [ -f "/root/install2.sh" ]; then
-    chmod +x /root/install2.sh
-    log "INFO" "Running secondary install script..."
-    /root/install2.sh >> "$LOGFILE" 2>&1
-    check_command "Secondary install script"
-  else
-    log "INFO" "No secondary install script found, skipping"
-  fi
-}
-
 # Function to complete setup and perform final tasks
 complete_setup() {
   log "STEP" "==================== CONFIGURATION COMPLETE ===================="
   
   # Create summary of changes
   log "INFO" "Setup Summary:"
-  log "INFO" "- System hostname: RTA-WRT"
+  log "INFO" "- System hostname: OPEN-WRT"
   log "INFO" "- LAN IP: 192.168.1.1"
   log "INFO" "- WiFi Enabled: ????"
-  log "INFO" "- Root password set: yes (password: rtawrt)"
+  log "INFO" "- Root password set: yes (password: root)"
   log "INFO" "- Timezone: Asia/Jakarta"
   
   # Remove temporary files

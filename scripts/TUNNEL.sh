@@ -52,12 +52,12 @@ determine_core_files() {
     openclash_core=$(get_github_release "MetaCubeX/mihomo" "${meta_file}-v[0-9]+\.[0-9]+\.[0-9]+\.gz")
 
     # PassWall core
-    passwall_core_file_zip="passwall_packages_ipk_${ARCH_3}"
-    passwall_core_file_zip_down=$(get_github_release_any "xiaorouji/openwrt-passwall" "${passwall_core_file_zip}.*.zip")
+#    passwall_core_file_zip="passwall_packages_ipk_${ARCH_3}"
+#    passwall_core_file_zip_down=$(get_github_release_any "xiaorouji/openwrt-passwall" "${passwall_core_file_zip}.*.zip")
 
     # Nikki core
-    nikki_file_ipk="nikki_${ARCH_3}-openwrt-${VEROP}"
-    nikki_file_ipk_down=$(get_github_release_any "rizkikotet-dev/OpenWrt-nikki-Mod" "${nikki_file_ipk}.*.tar.gz")
+#    nikki_file_ipk="nikki_${ARCH_3}-openwrt-${VEROP}"
+#    nikki_file_ipk_down=$(get_github_release_any "rizkikotet-dev/OpenWrt-nikki-Mod" "${nikki_file_ipk}.*.tar.gz")
 }
 
 # Function to download and extract package
@@ -95,35 +95,35 @@ setup_openclash() {
     return 0
 }
 
-setup_passwall() {
-    log "INFO" "Setting up PassWall..."
+# setup_passwall() {
+#    log "INFO" "Setting up PassWall..."
     
     # Download IPK packages
-    download_packages passwall_ipk || return 1
+#    download_packages passwall_ipk || return 1
     
     # Download and extract core
-    handle_package "${passwall_core_file_zip_down}" "packages/passwall.zip" \
-        "unzip -qq packages/passwall.zip -d packages && rm packages/passwall.zip" || return 1
+#    handle_package "${passwall_core_file_zip_down}" "packages/passwall.zip" \
+#        "unzip -qq packages/passwall.zip -d packages && rm packages/passwall.zip" || return 1
     
-    return 0
-}
+#    return 0
+#}
 
-setup_nikki() {
-    log "INFO" "Setting up Nikki..."
+# setup_nikki() {
+#    log "INFO" "Setting up Nikki..."
     
     # Download and extract core
-    handle_package "${nikki_file_ipk_down}" "packages/nikki.tar.gz" \
-        "tar -xzf packages/nikki.tar.gz -C packages && rm packages/nikki.tar.gz" || return 1
+#    handle_package "${nikki_file_ipk_down}" "packages/nikki.tar.gz" \
+#        "tar -xzf packages/nikki.tar.gz -C packages && rm packages/nikki.tar.gz" || return 1
     
-    return 0
-}
+#    return 0
+#}
 
 # Function to remove icons from theme files
 remove_icons() {
     local icons=("$@")
     local paths=(
         "files/usr/share/ucode/luci/template/themes/material/header.ut"
-        "files/usr/lib/lua/luci/view/themes/argon/header.htm"
+#        "files/usr/lib/lua/luci/view/themes/argon/header.htm"
     )
     
     for icon in "${icons[@]}"; do

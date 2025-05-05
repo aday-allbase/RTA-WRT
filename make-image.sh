@@ -21,11 +21,10 @@ zram-swap adb parted losetup resize2fs luci luci-ssl block-mount htop bash curl 
 tar unzip unrar gzip jq luci-app-ttyd nano httping screen openssh-sftp-server \
 liblucihttp liblucihttp-lua libubus-lua lua luci-app-firewall luci-app-opkg \
 ca-bundle ca-certificates luci-compat coreutils-sleep fontconfig coreutils-whoami file lolcat \
-luci-base luci-lib-base luci-lib-ip luci-lib-jsonc luci-lib-nixio luci-mod-admin-full \
 luci-mod-network luci-mod-status luci-mod-system luci-proto-ipv6 luci-proto-ppp \
 luci-theme-bootstrap px5g-wolfssl rpcd rpcd-mod-file rpcd-mod-iwinfo rpcd-mod-luci \
 rpcd-mod-rrdns uhttpd uhttpd-mod-ubus coreutils coreutils-base64 coreutils-nohup coreutils-stty libc coreutils-stat \
-ip-full libuci-lua microsocks resolveip ipset iptables iptables-legacy \
+ip-full libuci-lua resolveip ipset iptables iptables-legacy \
 iptables-mod-iprange iptables-mod-socket iptables-mod-tproxy kmod-ipt-nat luci-lua-runtime zoneinfo-asia zoneinfo-core \
 perl perlbase-base perlbase-bytes perlbase-class perlbase-config perlbase-cwd perlbase-dynaloader perlbase-errno perlbase-essential perlbase-fcntl perlbase-file \
 perlbase-filehandle perlbase-i18n perlbase-integer perlbase-io perlbase-list perlbase-locale perlbase-params perlbase-posix \
@@ -39,7 +38,8 @@ kmod-usb-serial-qualcomm kmod-usb-acm kmod-usb-net-cdc-ncm kmod-usb-net-cdc-mbim
 modemmanager  modemmanager-rpcd luci-proto-modemmanager libmbim libqmi usbutils luci-proto-mbim luci-proto-ncm \
 kmod-usb-net-huawei-cdc-ncm kmod-usb-net-cdc-ether kmod-usb-net-rndis kmod-usb-net-sierrawireless kmod-usb-ohci kmod-usb-serial-sierrawireless \
 kmod-usb-uhci kmod-usb2 kmod-usb-ehci kmod-usb-net-ipheth usbmuxd libusbmuxd-utils libimobiledevice-utils usb-modeswitch kmod-nls-utf8 mbim-utils xmm-modem \
-kmod-phy-broadcom kmod-phylib-broadcom kmod-tg3 libusb-1.0-0 kmod-usb3 kmod-r8169 kmod-lan743x"
+kmod-phy-broadcom kmod-phylib-broadcom kmod-tg3 libusb-1.0-0 kmod-usb3 kmod-r8169 kmod-lan743x \
+libcap libcap-bin ruby ruby-yaml kmod-inet-diag kmod-nft-tproxy"
 
 # Modem Tools
 PACKAGES+=" modeminfo-serial-zte modeminfo-serial-gosun modeminfo-qmi modeminfo-serial-yuge modeminfo-serial-thales modeminfo-serial-tw modeminfo-serial-meig modeminfo-serial-styx modeminfo-serial-mikrotik modeminfo-serial-dell modeminfo-serial-sierra modeminfo-serial-quectel modeminfo-serial-huawei modeminfo-serial-xmm modeminfo-serial-telit modeminfo-serial-fibocom modeminfo-serial-simcom modeminfo luci-app-modeminfo"
@@ -47,8 +47,8 @@ PACKAGES+=" atinout modemband luci-app-modemband sms-tool luci-app-sms-tool-js l
 
 # Tunnel option
 OPENCLASH+="coreutils-nohup bash dnsmasq-full curl ca-certificates ipset ip-full libcap libcap-bin ruby ruby-yaml kmod-tun kmod-inet-diag unzip kmod-nft-tproxy luci-compat luci luci-base luci-app-openclash"
-NIKKI+="nikki luci-app-nikki"
-PASSWALL+="chinadns-ng dns2socks dns2tcp geoview hysteria ipt2socks microsocks naiveproxy simple-obfs sing-box tcping trojan-plus tuic-client v2ray-core v2ray-plugin xray-core xray-plugin v2ray-geoip v2ray-geosite luci-app-passwall"
+# NIKKI+="nikki luci-app-nikki"
+# PASSWALL+="chinadns-ng dns2socks dns2tcp geoview hysteria ipt2socks microsocks naiveproxy simple-obfs sing-box tcping trojan-plus tuic-client v2ray-core v2ray-plugin xray-core xray-plugin v2ray-geoip v2ray-geosite luci-app-passwall"
 
 # Tunnel options handling
 handle_tunnel_option() {
@@ -78,22 +78,24 @@ handle_tunnel_option() {
 }
 
 # Remote Services
-PACKAGES+=" luci-app-zerotier luci-app-cloudflared tailscale luci-app-tailscale"
+# PACKAGES+=" luci-app-zerotier luci-app-cloudflared tailscale luci-app-tailscale"
 
 # NAS and Hard disk tools
 PACKAGES+=" luci-app-diskman luci-app-disks-info smartmontools kmod-usb-storage kmod-usb-storage-uas ntfs-3g"
 
 # Bandwidth And Network Monitoring
-PACKAGES+=" internet-detector luci-app-internet-detector internet-detector-mod-modem-restart nlbwmon luci-app-nlbwmon vnstat2 vnstati2 luci-app-vnstat2 netdata luci-app-netmonitor"
+PACKAGES+=" internet-detector luci-app-internet-detector internet-detector-mod-modem-restart vnstat2 vnstati2 luci-app-vnstat2"
 
 # Theme
-PACKAGES+=" luci-theme-rtawrt luci-theme-material luci-theme-argon luci-app-argon-config"
+PACKAGES+=" luci-theme-material"
 
 # PHP8
 PACKAGES+=" php8 php8-fastcgi php8-fpm php8-mod-session php8-mod-ctype php8-mod-fileinfo php8-mod-zip php8-mod-iconv php8-mod-mbstring"
 
 # More
-PACKAGES+=" luci-app-poweroffdevice luci-app-log-viewer luci-app-ramfree"
+PACKAGES+=" luci-app-ramfree"
+PACKAGES+=" luci-app-amlogic"
+EXCLUDED+=" -procd-ujail"
 
 # Handle profile-specific packages
 handle_profile_packages() {
@@ -105,7 +107,7 @@ handle_profile_packages() {
 
     case "${TYPE}" in
         "OPHUB"|"ULO")
-            PACKAGES+=" ath9k-htc-firmware btrfs-progs hostapd hostapd-utils kmod-ath kmod-ath9k kmod-ath9k-common kmod-ath9k-htc kmod-cfg80211 kmod-crypto-acompress kmod-crypto-crc32c kmod-crypto-hash kmod-fs-btrfs kmod-mac80211 wireless-tools wpa-cli wpa-supplicant"
+#            PACKAGES+=" ath9k-htc-firmware btrfs-progs hostapd hostapd-utils kmod-ath kmod-ath9k kmod-ath9k-common kmod-ath9k-htc kmod-cfg80211 kmod-crypto-acompress kmod-crypto-crc32c kmod-crypto-hash kmod-fs-btrfs kmod-mac80211 wireless-tools wpa-cli wpa-supplicant"
             EXCLUDED+=" -procd-ujail"
             ;;
         "OPHUB")
@@ -117,7 +119,7 @@ handle_profile_packages() {
 # Handle release branch specific packages
 handle_release_packages() {
     if [ "${BASE}" == "openwrt" ]; then
-        PACKAGES+=" luci-app-temp-status luci-app-cpu-status-mini"
+        PACKAGES+=" luci-app-temp-status"
         EXCLUDED+=" -dnsmasq"
     elif [ "${BASE}" == "immortalwrt" ]; then
         EXCLUDED+=" -dnsmasq -automount -libustream-openssl -default-settings-chn -luci-i18n-base-zh-cn"
