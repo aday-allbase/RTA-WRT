@@ -409,40 +409,8 @@ setup_traffic_monitoring() {
       /etc/init.d/vnstat_backup enable
       log "INFO" "vnstat backup service enabled"
     fi
-    
-    # Run vnstati script if available
-    if [ -f "/www/vnstati/vnstati.sh" ]; then
-      chmod +x /www/vnstati/vnstati.sh
-      /www/vnstati/vnstati.sh
-      log "INFO" "Generated vnstat traffic graphs"
-    fi
   else
     log "INFO" "vnstat not installed, skipping configuration"
-  fi
-}
-
-# Function to adjust app categories in LuCI
-adjust_app_categories() {
-  log "STEP" "Adjusting application categories..."
-  
-  # Check if the file exists before modifying
-  if [ -f "/usr/share/luci/menu.d/luci-app-lite-watchdog.json" ]; then
-    cp /usr/share/luci/menu.d/luci-app-lite-watchdog.json /usr/share/luci/menu.d/luci-app-lite-watchdog.json.bak
-    sed -i 's/services/modem/g' /usr/share/luci/menu.d/luci-app-lite-watchdog.json
-    log "INFO" "Adjusted lite-watchdog category to 'modem'"
-  fi
-  
-  # Scan for other menu files that might need adjustment
-  local MENU_DIR="/usr/share/luci/menu.d"
-  if [ -d "$MENU_DIR" ]; then
-    # Move modem-related apps to the modem category
-    for app in "luci-app-modeminfo" "luci-app-sms-tool" "luci-app-mmconfig"; do
-      if [ -f "$MENU_DIR/$app.json" ]; then
-        cp "$MENU_DIR/$app.json" "$MENU_DIR/$app.json.bak"
-        sed -i 's/"services"/"modem"/g' "$MENU_DIR/$app.json"
-        log "INFO" "Moved $app to modem category"
-      fi
-    done
   fi
 }
 
@@ -465,6 +433,8 @@ setup_shell_environment() {
     fi
   done
 }
+
+chmod +x /usr/bin/speedtest
 
 # Function to configure OpenClash if installed
 configure_openclash() {
@@ -623,8 +593,7 @@ complete_setup() {
   
   # Remove temporary files
   log "INFO" "Cleaning up and finalizing..."
-  rm -rf /root/install2.sh /tmp/* 2>/dev/null
-  
+
   # Update services
   /etc/init.d/log restart
   /etc/init.d/system restart
@@ -661,7 +630,7 @@ complete_setup() {
 main() {
   # Print banner
   echo "=========================================================="
-  echo "          RTA-WRT Router Configuration Script             "
+  echo "          OPEN-WRT Router Configuration Script             "
   echo "                     Version 2.0                          "
   echo "=========================================================="
   
