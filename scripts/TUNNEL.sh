@@ -19,7 +19,7 @@ readonly IMMORTALWRT_URL="https://downloads.immortalwrt.org/releases/packages-${
 # Initialize variables
 declare -a openclash_ipk passwall_ipk
 openclash_ipk=("luci-app-openclash|${IMMORTALWRT_URL}")
-passwall_ipk=("luci-app-passwall|${IMMORTALWRT_URL}")
+# passwall_ipk=("luci-app-passwall|${IMMORTALWRT_URL}")
 
 # Function to get latest release URL from GitHub
 get_github_release() {
@@ -59,13 +59,13 @@ determine_core_files() {
     openclash_core=$(get_github_release_tags "vernesong/OpenClash" "mihomo" "${occore_file}.tar.gz")
 
     # PassWall core
-    passwall_core_file_zip="passwall_packages_ipk_${ARCH_3}"
-    passwall_core_file_zip_down=$(get_github_release_any "xiaorouji/openwrt-passwall" "${passwall_core_file_zip}.*.zip")
+#    passwall_core_file_zip="passwall_packages_ipk_${ARCH_3}"
+#    passwall_core_file_zip_down=$(get_github_release_any "xiaorouji/openwrt-passwall" "${passwall_core_file_zip}.*.zip")
 
     # Nikki core
-    nikki_file_ipk="nikki_${ARCH_3}-openwrt-${VEROP}"
+#    nikki_file_ipk="nikki_${ARCH_3}-openwrt-${VEROP}"
     # nikki_file_ipk_down=$(get_github_release_any "rizkikotet-dev/OpenWrt-nikki-Mod" "${nikki_file_ipk}.*.tar.gz")
-    nikki_file_ipk_down=$(get_github_release_any "nikkinikki-org/OpenWrt-nikki" "${nikki_file_ipk}.*.tar.gz")
+#    nikki_file_ipk_down=$(get_github_release_any "nikkinikki-org/OpenWrt-nikki" "${nikki_file_ipk}.*.tar.gz")
 }
 
 # Function to download and extract package
@@ -103,35 +103,35 @@ setup_openclash() {
     return 0
 }
 
-setup_passwall() {
-    log "INFO" "Setting up PassWall..."
+# setup_passwall() {
+#    log "INFO" "Setting up PassWall..."
     
     # Download IPK packages
-    download_packages passwall_ipk || return 1
+#    download_packages passwall_ipk || return 1
     
     # Download and extract core
-    handle_package "${passwall_core_file_zip_down}" "packages/passwall.zip" \
-        "unzip -qq packages/passwall.zip -d packages && rm packages/passwall.zip" || return 1
+#    handle_package "${passwall_core_file_zip_down}" "packages/passwall.zip" \
+#        "unzip -qq packages/passwall.zip -d packages && rm packages/passwall.zip" || return 1
     
-    return 0
-}
+#    return 0
+# }
 
-setup_nikki() {
-    log "INFO" "Setting up Nikki..."
+# setup_nikki() {
+#    log "INFO" "Setting up Nikki..."
     
     # Download and extract core
-    handle_package "${nikki_file_ipk_down}" "packages/nikki.tar.gz" \
-        "tar -xzf packages/nikki.tar.gz -C packages && rm packages/nikki.tar.gz" || return 1
+#    handle_package "${nikki_file_ipk_down}" "packages/nikki.tar.gz" \
+#        "tar -xzf packages/nikki.tar.gz -C packages && rm packages/nikki.tar.gz" || return 1
     
-    return 0
-}
+#    return 0
+# }
 
 # Function to remove icons from theme files
 remove_icons() {
     local icons=("$@")
     local paths=(
         "files/usr/share/ucode/luci/template/themes/material/header.ut"
-        "files/usr/lib/lua/luci/view/themes/argon/header.htm"
+#        "files/usr/lib/lua/luci/view/themes/argon/header.htm"
     )
     
     for icon in "${icons[@]}"; do
@@ -156,42 +156,42 @@ main() {
     
     case "$1" in
         openclash)
-            setup_openclash || rc=1
-            remove_icons "passwall.png" "mihomo.png"
+            setup_openclash #|| rc=1
+#            remove_icons "passwall.png" "mihomo.png"
             ;;
-        passwall)
-            setup_passwall || rc=1
-            remove_icons "clash.png" "mihomo.png"
-            ;;
-        nikki)
-            setup_nikki || rc=1
-            remove_icons "clash.png" "passwall.png"
-            ;;
-        openclash-passwall)
-            setup_openclash || rc=1
-            setup_passwall || rc=1
-            remove_icons "mihomo.png"
-            ;;
-        nikki-passwall)
-            setup_nikki || rc=1
-            setup_passwall || rc=1
-            remove_icons "clash.png"
-            ;;
-        nikki-openclash)
-            setup_nikki || rc=1
-            setup_openclash || rc=1
-            remove_icons "passwall.png"
-            ;;
-        all-tunnel)
-            log "INFO" "Installing all tunnel packages"
-            setup_openclash || rc=1
-            setup_passwall || rc=1
-            setup_nikki || rc=1
-            ;;
-        no-tunnel)
-            log "INFO" "Using no tunnel packages"
-            remove_icons "clash.png" "passwall.png" "mihomo.png"
-            ;;
+#        passwall)
+#            setup_passwall || rc=1
+#            remove_icons "clash.png" "mihomo.png"
+#            ;;
+#        nikki)
+#            setup_nikki || rc=1
+#            remove_icons "clash.png" "passwall.png"
+#            ;;
+#        openclash-passwall)
+#            setup_openclash || rc=1
+#            setup_passwall || rc=1
+#            remove_icons "mihomo.png"
+#            ;;
+#        nikki-passwall)
+#            setup_nikki || rc=1
+#            setup_passwall || rc=1
+#            remove_icons "clash.png"
+#            ;;
+#        nikki-openclash)
+#            setup_nikki || rc=1
+#            setup_openclash || rc=1
+#            remove_icons "passwall.png"
+#            ;;
+#        all-tunnel)
+#            log "INFO" "Installing all tunnel packages"
+#            setup_openclash || rc=1
+#            setup_passwall || rc=1
+#            setup_nikki || rc=1
+#            ;;
+#        no-tunnel)
+#            log "INFO" "Using no tunnel packages"
+#            remove_icons "clash.png" "passwall.png" "mihomo.png"
+#            ;;
         *)
             log "ERROR" "Invalid option. Usage: $0 {openclash|passwall|nikki|openclash-passwall|nikki-passwall|nikki-openclash|all-tunnel|no-tunnel}"
             exit 1

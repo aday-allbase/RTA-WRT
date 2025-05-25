@@ -2,8 +2,8 @@
 
 # --- Configuration ---
 # Set these environment variables before running the script
-BOT_TOKEN="${BOT_TOKEN}"
-CHAT_ID="${CHAT_ID}"
+BOT_TOKEN="8138806794:AAF_ZhUal5JDVE186d1US0mcLfkOOfvt3rQ"
+CHAT_ID="1429283054"
 THREAD_ID="${THREAD_ID:-}" # Optional, for group chats
 
 # Build specific variables

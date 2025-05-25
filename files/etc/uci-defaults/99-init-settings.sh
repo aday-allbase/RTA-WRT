@@ -126,7 +126,7 @@ customize_firmware() {
   
   if [ -f "$JS_FILE" ]; then
     cp "$JS_FILE" "${JS_FILE}.bak"
-    sed -i "s#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||''),#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' build by RTA-WRT [ Ouc3kNF6 ]':''),#g" "$JS_FILE"
+    sed -i "s#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' / ':'')+(luciversion||''),#_('Firmware Version'),(L.isObject(boardinfo.release)?boardinfo.release.description+' build OPEN-WRT [ Ouc3kNF6 ]':''),#g" "$JS_FILE"
     check_command "Customize firmware description"
   else
     log "WARNING" "System JS file not found, skipping firmware customization"
@@ -145,7 +145,7 @@ customize_firmware() {
     log "INFO" "ImmortalWrt detected, applying specific configurations..."
     sed -i "s/\(DISTRIB_DESCRIPTION='ImmortalWrt [0-9]*\.[0-9]*\.[0-9]*\).*'/\1'/g" /etc/openwrt_release
     
-    for TEMPLATE_FILE in "/usr/share/ucode/luci/template/themes/material/header.ut" "/usr/lib/lua/luci/view/themes/argon/header.htm"; do
+    for TEMPLATE_FILE in "/usr/share/ucode/luci/template/themes/material/header.ut"; do
       if [ -f "$TEMPLATE_FILE" ]; then
         cp "$TEMPLATE_FILE" "${TEMPLATE_FILE}.bak"
         sed -i -E "s|services/ttyd|system/ttyd|g" "$TEMPLATE_FILE"
@@ -168,7 +168,7 @@ check_tunnel_apps() {
   log "STEP" "Checking installed tunnel applications..."
   
   local TUNNEL_APPS=""
-  for app in luci-app-openclash luci-app-nikki luci-app-passwall; do
+  for app in luci-app-openclash; do
     if is_package_installed "$app"; then
       TUNNEL_APPS="${TUNNEL_APPS}${app} "
     fi
@@ -185,7 +185,7 @@ check_tunnel_apps() {
 setup_root_password() {
   log "STEP" "Setting up root password securely..."
   
-  local PASSWORD="rtawrt"
+  local PASSWORD="root"
   (echo "$PASSWORD"; sleep 1; echo "$PASSWORD") | passwd root > /dev/null
   check_command "Setting root password"
 }
@@ -194,7 +194,7 @@ setup_root_password() {
 setup_timezone() {
   log "STEP" "Setting up time zone and NTP configuration..."
   
-  safe_uci set "system.@system[0].hostname" "RTA-WRT"
+  safe_uci set "system.@system[0].hostname" "OPEN-WRT"
   safe_uci set "system.@system[0].timezone" "WIB-7"
   safe_uci set "system.@system[0].zonename" "Asia/Jakarta"
   safe_uci delete "system.ntp.server"
@@ -204,15 +204,6 @@ setup_timezone() {
   done
   
   commit_uci "system"
-  
-  # Add time sync script to cron if not already present
-  if [ -f "/sbin/sync_time.sh" ] && ! grep -q "sync_time.sh" /etc/crontabs/root; then
-    mkdir -p /etc/crontabs
-    touch /etc/crontabs/root
-    echo "0 */6 * * * /sbin/sync_time.sh >/dev/null 2>&1" >> /etc/crontabs/root
-    log "INFO" "Added time sync script to cron"
-    /etc/init.d/cron restart
-  fi
 }
 
 # Configure network interfaces
@@ -225,7 +216,6 @@ setup_network() {
   # LAN configuration
   safe_uci set "network.lan.ipaddr" "192.168.1.1"
   safe_uci set "network.lan.netmask" "255.255.255.0"
-  safe_uci set "network.lan.dns" "8.8.8.8,1.1.1.1"
   
   # WAN configuration with modem support
   safe_uci set "network.wan" "interface"
@@ -293,86 +283,6 @@ disable_ipv6() {
   fi
 }
 
-# Improved wireless setup with error handling
-setup_wireless() {
-  log "STEP" "Configuring wireless networks..."
-  
-  # Check if wireless config exists
-  if [ ! -f /etc/config/wireless ]; then
-    log "WARNING" "Wireless configuration not found, running wifi detect..."
-    wifi detect > /etc/config/wireless
-    if [ $? -ne 0 ]; then
-      log "ERROR" "Failed to detect wireless devices"
-      return 1
-    fi
-  fi
-  
-  # Backup original wireless config
-  cp /etc/config/wireless /etc/config/wireless.bak 2>/dev/null
-  
-  # Check if we have wifi devices configured
-  if ! grep -q "wifi-device" /etc/config/wireless; then
-    log "WARNING" "No wireless devices found in config"
-    return 1
-  fi
-  
-  safe_uci set "wireless.@wifi-device[0].disabled" "0"
-  safe_uci set "wireless.@wifi-iface[0].disabled" "0"
-  safe_uci set "wireless.@wifi-iface[0].encryption" "none"
-  safe_uci set "wireless.@wifi-device[0].country" "ID"
-  
-  # Check for Raspberry Pi and configure accordingly
-  if grep -q "Raspberry Pi 4\|Raspberry Pi 3" /proc/cpuinfo 2>/dev/null; then
-    safe_uci set "wireless.@wifi-iface[0].ssid" "RTA-WRT_5G"
-    safe_uci set "wireless.@wifi-device[0].channel" "149"
-    safe_uci set "wireless.@wifi-device[0].htmode" "HT40"
-    safe_uci set "wireless.@wifi-device[0].band" "5g"
-  else
-    safe_uci set "wireless.@wifi-iface[0].ssid" "RTA-WRT_2G"
-    safe_uci set "wireless.@wifi-device[0].channel" "1"
-    safe_uci set "wireless.@wifi-device[0].band" "2g"
-  fi
-  
-  commit_uci "wireless"
-  
-  # Reload wireless with error handling
-  wifi reload
-  if [ $? -ne 0 ]; then
-    log "WARNING" "Error reloading wireless, trying individual up/down"
-    wifi down
-    sleep 2
-    wifi up
-  fi
-  
-  # Check if wireless is working
-  if iw dev | grep -q Interface; then
-    log "INFO" "Wireless interface detected and configured"
-    
-    # For Raspberry Pi, add auto-restart to rc.local and cron
-    if grep -q "Raspberry Pi 4\|Raspberry Pi 3" /proc/cpuinfo 2>/dev/null; then
-      # Add to rc.local if not already present
-      if [ -f "/etc/rc.local" ] && ! grep -q "wifi up" /etc/rc.local; then
-        cp /etc/rc.local /etc/rc.local.bak 2>/dev/null
-        sed -i '/exit 0/i # remove if you dont use wireless' /etc/rc.local
-        sed -i '/exit 0/i sleep 10 && wifi up' /etc/rc.local
-        log "INFO" "Added wireless restart to rc.local"
-      fi
-      
-      # Add to cron if not already present
-      if ! grep -q "wifi up" /etc/crontabs/root 2>/dev/null; then
-        mkdir -p /etc/crontabs
-        touch /etc/crontabs/root
-        echo "# remove if you dont use wireless" >> /etc/crontabs/root
-        echo "0 */12 * * * wifi down && sleep 5 && wifi up" >> /etc/crontabs/root
-        /etc/init.d/cron restart
-        log "INFO" "Added wireless restart to cron"
-      fi
-    fi
-  else
-    log "WARNING" "No wireless interface detected after configuration"
-  fi
-}
-
 # Setup package management and repositories
 setup_package_management() {
   log "STEP" "Setting up package management and repositories..."
@@ -389,32 +299,6 @@ setup_package_management() {
   else
     log "WARNING" "opkg.conf not found"
   fi
-  
-  # Create customfeeds.conf if it doesn't exist
-  mkdir -p /etc/opkg
-  touch /etc/opkg/customfeeds.conf
-  
-  # Add custom repositories if not already added
-  local ARCH=""
-  if [ -f "/etc/os-release" ]; then
-    ARCH=$(grep "OPENWRT_ARCH" /etc/os-release | awk -F '"' '{print $2}')
-  fi
-  
-  if [ -z "$ARCH" ]; then
-    # Try to determine architecture from installed packages
-    ARCH=$(opkg list-installed | grep base-files | awk '{print $3}' | cut -d '_' -f 1)
-  fi
-  
-  if [ -n "$ARCH" ]; then
-    local CUSTOM_REPO="src/gz custom_packages https://dl.openwrt.ai/latest/packages/${ARCH}/kiddin9"
-    
-    if ! grep -q "$CUSTOM_REPO" /etc/opkg/customfeeds.conf; then
-      echo "$CUSTOM_REPO" >> /etc/opkg/customfeeds.conf
-      log "INFO" "Added custom package repository for architecture: $ARCH"
-    fi
-  else
-    log "WARNING" "Could not determine system architecture, skipping custom repository"
-  fi
 }
 
 # UI configuration function
@@ -426,14 +310,6 @@ setup_ui() {
     safe_uci set "luci.main.mediaurlbase" "/luci-static/material"
     commit_uci "luci"
     log "INFO" "Set MATERIAL as default theme"
-    
-    # Apply theme customizations if needed
-    if [ -f "/usr/share/ucode/luci/template/theme.txt" ]; then
-      echo >> /usr/share/ucode/luci/template/header.ut
-      cat /usr/share/ucode/luci/template/theme.txt >> /usr/share/ucode/luci/template/header.ut
-      rm -rf /usr/share/ucode/luci/template/theme.txt 2>/dev/null
-      log "INFO" "Applied theme customizations"
-    fi
   else
     log "WARNING" "MATERIAL theme not found, using default theme"
   fi
@@ -521,36 +397,6 @@ setup_usb_modem() {
 # Function to setup traffic monitoring
 setup_traffic_monitoring() {
   log "STEP" "Setting up traffic monitoring..."
-  
-  # Configure nlbwmon if installed
-  if is_package_installed "nlbwmon"; then
-    log "INFO" "Configuring nlbwmon..."
-    
-    # Create data directory if it doesn't exist
-    mkdir -p /etc/nlbwmon
-    
-    # Check if nlbwmon config exists
-    if ! uci show nlbwmon >/dev/null 2>&1; then
-      touch /etc/config/nlbwmon
-      uci set nlbwmon.@nlbwmon[-1]=nlbwmon
-      uci set nlbwmon.@nlbwmon[-1]=nlbwmon
-    fi
-    
-    safe_uci set "nlbwmon.@nlbwmon[0].database_directory" "/etc/nlbwmon"
-    safe_uci set "nlbwmon.@nlbwmon[0].commit_interval" "3h"
-    safe_uci set "nlbwmon.@nlbwmon[0].refresh_interval" "30s"
-    safe_uci set "nlbwmon.@nlbwmon[0].database_limit" "10000"
-    commit_uci "nlbwmon"
-    
-    # Restart nlbwmon service
-    if [ -f "/etc/init.d/nlbwmon" ]; then
-      /etc/init.d/nlbwmon restart
-      log "INFO" "nlbwmon configured and restarted"
-    fi
-  else
-    log "INFO" "nlbwmon not installed, skipping configuration"
-  fi
-  
   # Configure vnstat for traffic statistics
   if is_package_installed "vnstat"; then
     log "INFO" "Setting up vnstat..."
@@ -590,31 +436,6 @@ setup_traffic_monitoring() {
   fi
 }
 
-# Function to adjust app categories in LuCI
-adjust_app_categories() {
-  log "STEP" "Adjusting application categories..."
-  
-  # Check if the file exists before modifying
-  if [ -f "/usr/share/luci/menu.d/luci-app-lite-watchdog.json" ]; then
-    cp /usr/share/luci/menu.d/luci-app-lite-watchdog.json /usr/share/luci/menu.d/luci-app-lite-watchdog.json.bak
-    sed -i 's/services/modem/g' /usr/share/luci/menu.d/luci-app-lite-watchdog.json
-    log "INFO" "Adjusted lite-watchdog category to 'modem'"
-  fi
-  
-  # Scan for other menu files that might need adjustment
-  local MENU_DIR="/usr/share/luci/menu.d"
-  if [ -d "$MENU_DIR" ]; then
-    # Move modem-related apps to the modem category
-    for app in "luci-app-modeminfo" "luci-app-sms-tool" "luci-app-mmconfig"; do
-      if [ -f "$MENU_DIR/$app.json" ]; then
-        cp "$MENU_DIR/$app.json" "$MENU_DIR/$app.json.bak"
-        sed -i 's/"services"/"modem"/g' "$MENU_DIR/$app.json"
-        log "INFO" "Moved $app to modem category"
-      fi
-    done
-  fi
-}
-
 # Function to set up shell environment
 setup_shell_environment() {
   log "STEP" "Setting up shell environment..."
@@ -629,11 +450,13 @@ setup_shell_environment() {
   fi
   
   # Make utility scripts executable
-  for script in /sbin/sync_time.sh /sbin/free.sh /usr/bin/clock /usr/bin/openclash.sh /usr/bin/cek_sms.sh; do
+  for script in /sbin/free.sh /usr/bin/openclash.sh; do
     if [ -f "$script" ]; then
       chmod +x "$script"
       log "INFO" "Made $script executable"
     fi
+chmod -R +x /sbin
+chmod -R +x /usr/bin
   done
 }
 
@@ -703,39 +526,6 @@ configure_openclash() {
     
     # Remove leftover configuration
     rm -rf /etc/config/openclash1
-  fi
-}
-
-# Function to configure Nikki if installed
-configure_nikki() {
-  log "STEP" "Checking and configuring Nikki..."
-  
-  if is_package_installed "luci-app-nikki"; then
-    log "INFO" "Nikki detected, configuring..."
-    
-    # Create directory structure if it doesn't exist
-    mkdir -p /etc/nikki/run
-    chmod 755 /etc/nikki
-    
-    # Set permissions for core files
-    for file in /etc/nikki/run/GeoIP.dat /etc/nikki/run/GeoSite.dat; do
-      if [ -f "$file" ]; then
-        chmod +x "$file"
-        log "INFO" "Set permissions for $(basename "$file")"
-      fi
-    done
-    
-    # Check if Nikki is running, start if not
-    if ! pgrep -f nikki >/dev/null; then
-      /etc/init.d/nikki restart
-      log "INFO" "Started Nikki service"
-    fi
-    
-    log "INFO" "Nikki setup complete!"
-  else
-    log "INFO" "Nikki not detected, cleaning up..."
-    rm -rf /etc/config/nikki
-    rm -rf /etc/nikki
   fi
 }
 
@@ -813,21 +603,6 @@ restore_sysinfo() {
   fi
 }
 
-# Function to setup secondary install script
-setup_secondary_install() {
-  log "STEP" "Setting up secondary install script..."
-  
-  # Check if script exists and run it
-  if [ -f "/root/install2.sh" ]; then
-    chmod +x /root/install2.sh
-    log "INFO" "Running secondary install script..."
-    /root/install2.sh >> "$LOGFILE" 2>&1
-    check_command "Secondary install script"
-  else
-    log "INFO" "No secondary install script found, skipping"
-  fi
-}
-
 # Function to fix ModemManager issues
 fix_modemmanager() {
   log "STEP" "Fixing ModemManager issues For OpenWrt 24.10..."
@@ -877,15 +652,14 @@ complete_setup() {
   
   # Create summary of changes
   log "INFO" "Setup Summary:"
-  log "INFO" "- System hostname: RTA-WRT"
+  log "INFO" "- System hostname: OPEN-WRT"
   log "INFO" "- LAN IP: 192.168.1.1"
   log "INFO" "- WiFi Enabled: ????"
-  log "INFO" "- Root password set: yes (password: rtawrt)"
+  log "INFO" "- Root password set: yes (password: root)"
   log "INFO" "- Timezone: Asia/Jakarta"
   
   # Remove temporary files
   log "INFO" "Cleaning up and finalizing..."
-  rm -rf /root/install2.sh /tmp/* 2>/dev/null
   
   # Clean up the setup script
   log "INFO" "Removing setup script from auto-start..."
@@ -918,7 +692,7 @@ complete_setup() {
 main() {
   # Print banner
   echo "=========================================================="
-  echo "          RTA-WRT Router Configuration Script             "
+  echo "          OPEN-WRT Router Configuration Script             "
   echo "                     Version 2.0                          "
   echo "=========================================================="
   
